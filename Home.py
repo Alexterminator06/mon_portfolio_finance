@@ -47,12 +47,12 @@ st.write("---")
 # On crée 3 colonnes pour afficher les projets côte à côte
 col1, col2, col3 = st.columns(3)
 
-# PROJET 1 : Analyse Bourse
+# PROJET 1 : trading bot
 with col1:
     clickable_image(
         image_path="assets/projet_bourse.jpg",  # Assurez-vous d'avoir cette image
-        link_url="https://mon-projet-bourse.streamlit.app", # Mettez le vrai lien ici
-        title="📈 Analyse de Marché"
+        link_url="https://bitcoin-trading-bot.streamlit.app/", # Mettez le vrai lien ici
+        title="🤖 Bot de Trading"
     )
 
 # PROJET 2 : Bot Trading
