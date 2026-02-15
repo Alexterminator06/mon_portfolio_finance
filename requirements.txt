@@ -4,3 +4,13 @@ numpy
 yfinance
 matplotlib
 plotly
+streamlit
+pandas
+pandas-ta
+yfinance
+alpaca-trade-api
+backtesting
+matplotlib
+pyarrow
+python-dotenv
+ccxt
