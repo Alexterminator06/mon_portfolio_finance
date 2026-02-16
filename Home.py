@@ -106,14 +106,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. GÉNÉRATION HTML ---
+# --- 4. GÉNÉRATION HTML 3D ---
 html_cards = ""
 angle = 360 / len(projects)
 tz = 450 
 
 for i, project in enumerate(projects):
-    # Ici on récupère juste la partie base64 pure, ou l'url complète si on réutilise la fonction
-    # Note: ma fonction retourne maintenant "data:image/...", donc on l'utilise directement dans src
     img_src = get_base64_image(project["image"])
     
     html_cards += f"""
@@ -130,10 +128,14 @@ for i, project in enumerate(projects):
                     </div>
                 </a>
             </div>
+            
+            <div class="face right"></div>
+            <div class="face left"></div>
+            
             <div class="face back">
                 <div class="back-design">
                     <div class="logo">🏛️</div>
-                    <div class="text">ASSET MANAGED</div>
+                    <div class="text">CONFIDENTIAL</div>
                 </div>
             </div>
         </div>
