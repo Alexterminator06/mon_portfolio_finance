@@ -3,32 +3,34 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# --- 1. CONFIGURATION DE LA PAGE ---
+# --- 1. CONFIGURATION ---
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
-# --- 2. CSS HACK : SUPPRESSION DES MARGES STREAMLIT ---
-# C'est ce bloc qui permet de coller le carrousel aux bords de l'écran
+# --- 2. CSS "NUCLEAR" : SUPPRESSION TOTALE DES MARGES ET SCROLLBARS ---
 st.markdown("""
     <style>
-        /* Supprime les marges par défaut de Streamlit */
+        /* 1. Supprime les marges du conteneur principal */
         .block-container {
-            padding-top: 0rem;
-            padding-bottom: 0rem;
-            padding-left: 0rem;
-            padding-right: 0rem;
-            max-width: 100%;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
         }
-        /* Supprime le header (la barre colorée en haut) si elle gêne */
-        header {
+        
+        /* 2. Cache le header et le footer */
+        header, footer {
             visibility: hidden;
+            display: none;
         }
-        /* Supprime le footer 'Made with Streamlit' */
-        footer {
-            visibility: hidden;
-        }
-        /* S'assure que l'application prend toute la hauteur */
+        
+        /* 3. Empêche le scroll sur la page principale Streamlit */
+        /* C'est la clé pour éviter la barre de défilement à droite */
         .stApp {
-            height: 100vh;
+            overflow: hidden; 
+        }
+        
+        /* 4. Supprime l'espace blanc souvent présent sous les iframes */
+        iframe {
+            display: block;
         }
     </style>
     """, unsafe_allow_html=True)
