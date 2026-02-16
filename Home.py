@@ -27,7 +27,7 @@ def get_base64_image(image_filename):
 
 # ⚠️ MODIFIEZ ICI LE NOM DE VOTRE IMAGE DE FOND ⚠️
 # Assurez-vous que ce fichier existe dans le dossier 'assets'
-BACKGROUND_IMAGE_NAME = "background.jpg" 
+BACKGROUND_IMAGE_NAME = "background2.jpg" 
 
 # On charge l'image de fond tout de suite
 background_b64 = get_base64_image(BACKGROUND_IMAGE_NAME)
