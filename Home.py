@@ -3,8 +3,35 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-# Configuration de la page
-st.set_page_config(layout="wide", page_title="Portfolio Finance 3D", page_icon="🏦")
+# --- 1. CONFIGURATION DE LA PAGE ---
+st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
+
+# --- 2. CSS HACK : SUPPRESSION DES MARGES STREAMLIT ---
+# C'est ce bloc qui permet de coller le carrousel aux bords de l'écran
+st.markdown("""
+    <style>
+        /* Supprime les marges par défaut de Streamlit */
+        .block-container {
+            padding-top: 0rem;
+            padding-bottom: 0rem;
+            padding-left: 0rem;
+            padding-right: 0rem;
+            max-width: 100%;
+        }
+        /* Supprime le header (la barre colorée en haut) si elle gêne */
+        header {
+            visibility: hidden;
+        }
+        /* Supprime le footer 'Made with Streamlit' */
+        footer {
+            visibility: hidden;
+        }
+        /* S'assure que l'application prend toute la hauteur */
+        .stApp {
+            height: 100vh;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 1. CONFIGURATION DES PROJETS ---
 BACKGROUND_URL = "C:\\Users\\Alexei\\Pictures\\Saved Pictures\\chess-checkmated-chess-pieces-black-white-957312.jpeg"
@@ -48,7 +75,6 @@ projects = [
     }
 ]
 
-# --- 2. FONCTIONS ---
 def get_base64_image(image_filename):
     image_path = os.path.join("assets", image_filename)
     if not os.path.exists(image_path):
@@ -56,7 +82,7 @@ def get_base64_image(image_filename):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. GÉNÉRATION DU CARROUSEL ---
+# --- 4. GÉNÉRATION DU HTML ---
 html_cards = ""
 angle = 360 / len(projects)
 tz = 450 
@@ -64,9 +90,6 @@ tz = 450
 for i, project in enumerate(projects):
     img_b64 = get_base64_image(project["image"])
     
-    # --- CORRECTION ICI ---
-    # On définit les variables CSS --angle et --tz directement dans le style de l'élément
-    # Cela permet à l'animation (@keyframes) de les récupérer
     html_cards += f"""
     <div class="card-container" style="--angle: {i * angle}deg; --tz: {tz}px;">
         <div class="card">
@@ -96,8 +119,12 @@ carousel_html = f"""
 <html>
 <head>
 <style>
+    /* LE FOND PREND TOUT L'ÉCRAN (viewport) */
     body {{ 
         margin: 0; 
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
         overflow: hidden; 
         background: url('{BACKGROUND_URL}') no-repeat center center fixed; 
         background-size: cover;
@@ -114,7 +141,7 @@ carousel_html = f"""
 
     .scene {{
         width: 100%;
-        height: 700px;
+        height: 100%; /* Prend toute la hauteur du body */
         perspective: 1200px;
         display: flex;
         justify-content: center;
@@ -130,7 +157,7 @@ carousel_html = f"""
         height: 360px;
         position: relative;
         transform-style: preserve-3d;
-        margin-top: -50px;
+        /* On retire la marge négative car on est centré verticalement via Flexbox */
     }}
 
     .card-container {{
@@ -140,13 +167,8 @@ carousel_html = f"""
         left: 0;
         top: 0;
         transform-style: preserve-3d;
-        
-        /* Initialisation de la position avec les variables CSS injectées par Python */
         transform: rotateY(var(--angle)) translateZ(var(--tz));
-
         -webkit-box-reflect: below 20px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4));
-        
-        /* L'animation utilise maintenant les mêmes variables */
         animation: float 6s ease-in-out infinite;
     }}
     
@@ -156,7 +178,6 @@ carousel_html = f"""
     .card-container:nth-child(4) {{ animation-delay: 3s; }}
     .card-container:nth-child(5) {{ animation-delay: 4s; }}
 
-    /* --- CORRECTION DE L'ANIMATION --- */
     @keyframes float {{
         0% {{ transform: translateY(0px) rotateY(var(--angle)) translateZ(var(--tz)); }}
         50% {{ transform: translateY(-20px) rotateY(var(--angle)) translateZ(var(--tz)); }}
@@ -304,6 +325,7 @@ carousel_html = f"""
 </html>
 """
 
-st.title("🏛️ Mon Portfolio")
-st.markdown("**Analysez. Cliquez. Investissez.**")
-components.html(carousel_html, height=750)
+# --- 5. AFFICHAGE FINAL ---
+# Le titre est supprimé car il gêne l'immersion.
+# Si vous voulez un titre, il faut l'intégrer DANS le HTML, pas via st.title()
+components.html(carousel_html, height=850, scrolling=False)
