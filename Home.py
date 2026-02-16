@@ -10,35 +10,40 @@ st.set_page_config(layout="wide", page_title="Portfolio Finance 3D", page_icon="
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
-        "title": "Analyse Bourse",
-        "image": "bourse.jpg", 
-        "link": "https://mon-projet-bourse.streamlit.app",
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
         "desc": "Visualisation de marché & KPIs"
     },
     {
-        "title": "Bot Trading",
-        "image": "crypto.jpg",
-        "link": "https://mon-bot-bitcoin.streamlit.app",
-        "desc": "Stratégie Golden Cross BTC"
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Visualisation de marché & KPIs"
     },
     {
-        "title": "Pricing Options",
-        "image": "option.jpg",
-        "link": "https://mon-pricing.streamlit.app",
-        "desc": "Modèle Black-Scholes"
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Visualisation de marché & KPIs"
     },
-    # J'ai gardé des doublons pour que le carrousel ait une belle forme (5 éléments min conseillé)
     {
-        "title": "Optimisation Markowitz",
-        "image": "bourse.jpg",
-        "link": "#",
-        "desc": "Allocation d'actifs"
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Visualisation de marché & KPIs"
     },
      {
-        "title": "Analyse Sentiment",
-        "image": "crypto.jpg",
-        "link": "#",
-        "desc": "NLP sur news financières"
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Visualisation de marché & KPIs"
+    },
+    {
+        "title": "Trading bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Visualisation de marché & KPIs"
     }
 ]
 
