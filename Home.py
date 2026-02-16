@@ -103,12 +103,14 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- 4. GÉNÉRATION HTML ---
+# On prépare les cartes avec la structure HTML mise à jour
 html_cards = ""
 angle = 360 / len(projects)
 tz = 450 
 
 for i, project in enumerate(projects):
     img_data = get_base64_image(project["image"])
+    # Fallback image
     img_tag = f"<img src='{img_data}' alt='{project['title']}'>" if img_data else "<div style='height:220px; background:#222;'></div>"
 
     html_cards += f"""
@@ -126,48 +128,49 @@ for i, project in enumerate(projects):
                 </a>
             </div>
             <div class="face back">
-                <div class="back-design">
-                    <div class="logo">🏛️</div>
-                    <div class="text">CONFIDENTIAL</div>
-                </div>
             </div>
+            <div class="face right"></div>
+            <div class="face left"></div>
         </div>
     </div>
     """
 
+# --- 5. LE CODE HTML/CSS/JS FINAL ---
 carousel_html = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <style>
+    :root {{
+        --w: 260px;   /* Largeur Carte */
+        --h: 360px;   /* Hauteur Carte */
+        --d: 30px;    /* ÉPAISSEUR */
+    }}
+
     body {{ 
         margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
-        background: {bg_css} no-repeat center center fixed; background-size: cover;
+        background: {bg_css} no-repeat center center fixed; 
+        background-size: cover;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-    }}
-    body::before {{
-        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.2); z-index: -1;
     }}
 
     .scene {{
         width: 100%; height: 100vh;
         perspective: 1200px;
         display: flex; justify-content: center; align-items: center;
-        cursor: grab; user-select: none;
     }}
-    .scene:active {{ cursor: grabbing; }}
 
     .carousel {{
-        width: 260px; height: 360px;
+        width: var(--w); height: var(--h);
         position: relative; transform-style: preserve-3d;
     }}
 
     .card-container {{
-        position: absolute; width: 260px; height: 360px; left: 0; top: 0;
+        position: absolute; 
+        width: var(--w); height: var(--h);
+        left: 0; top: 0;
         transform-style: preserve-3d;
         transform: rotateY(var(--angle)) translateZ(var(--tz));
-        -webkit-box-reflect: below 10px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.3));
         animation: float 6s ease-in-out infinite;
     }}
     
@@ -176,12 +179,14 @@ carousel_html = f"""
     .card-container:nth-child(3) {{ animation-delay: 2s; }}
     .card-container:nth-child(4) {{ animation-delay: 3s; }}
     .card-container:nth-child(5) {{ animation-delay: 4s; }}
+    .card-container:nth-child(6) {{ animation-delay: 5s; }}
 
     @keyframes float {{
         0%, 100% {{ transform: translateY(0px) rotateY(var(--angle)) translateZ(var(--tz)); }}
-        50% {{ transform: translateY(-15px) rotateY(var(--angle)) translateZ(var(--tz)); }}
+        50% {{ transform: translateY(-20px) rotateY(var(--angle)) translateZ(var(--tz)); }}
     }}
 
+    /* --- STRUCTURE 3D --- */
     .card {{
         width: 100%; height: 100%;
         position: relative; 
@@ -190,38 +195,70 @@ carousel_html = f"""
     }}
 
     .face {{
-        position: absolute; width: 100%; height: 100%;
-        backface-visibility: hidden; /* Cache le dos quand on regarde devant */
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        position: absolute; 
+        border: 1px solid rgba(0,0,0,0.1);
     }}
 
-    /* --- FACE AVANT --- */
+    /* 1. DEVANT */
     .front {{
-        background: rgba(20, 20, 30, 0.95);
+        width: var(--w); height: var(--h);
+        background: rgba(20, 20, 30, 0.98);
         border: 1px solid rgba(255, 215, 0, 0.3);
-        /* Pas de rotation, c'est la face par défaut */
+        transform: translateZ(calc(var(--d) / 2)); 
     }}
-    .front:hover {{ border-color: #ffd700; box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }}
+    .front:hover {{ border-color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.4); }}
 
-    /* --- FACE ARRIÈRE (MARBRE) --- */
+    /* 2. DERRIÈRE (MARBRE) */
     .back {{
-        transform: rotateY(180deg); /* On la retourne pour qu'elle soit au dos */
+        width: var(--w); height: var(--h);
+        background: {marble_css}; 
+        background-size: cover;
+        background-position: center;
+        display: flex; justify-content: center; align-items: center;
+        transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+        border: 1px solid #888;
+    }}
+
+    /* 3. DROITE (MARBRE FONCÉ) */
+    .right {{
+        width: var(--d); height: var(--h);
+        
+        /* Image Marbre */
         background: {marble_css};
         background-size: cover;
-        border: 1px solid #888;
-        display: flex; justify-content: center; align-items: center;
+        background-position: center;
+        filter: brightness(0.6); /* Plus sombre pour simuler l'ombre */
+        
+        left: calc((var(--w) - var(--d)) / 2);
+        transform: translateX(calc(var(--w) / 2)) rotateY(90deg);
+        border: 1px solid #555;
     }}
 
-    /* Contenu */
-    .card-content img {{ width: 100%; height: 220px; object-fit: cover; border-bottom: 1px solid rgba(255,215,0,0.2); }}
+    /* 4. GAUCHE (MARBRE FONCÉ) */
+    .left {{
+        width: var(--d); height: var(--h);
+        
+        /* Image Marbre */
+        background: {marble_css};
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.6); /* Plus sombre pour simuler l'ombre */
+        
+        left: calc((var(--w) - var(--d)) / 2);
+        transform: translateX(calc(var(--w) / -2)) rotateY(-90deg);
+        border: 1px solid #555;
+    }}
+
+    /* --- CONTENU --- */
+    .card-content img {{ width: 100%; height: 220px; object-fit: cover; }}
     .info {{ padding: 20px; color: white; text-align: center; }}
     .info h3 {{ margin: 0 0 5px 0; font-size: 1.2rem; color: #fff; text-transform: uppercase; }}
     .info p {{ margin: 0; font-size: 0.85rem; color: #aaa; }}
 
-    .back-design {{ text-align: center; opacity: 0.8; }}
-    .back-design .logo {{ font-size: 4rem; margin-bottom: 10px; color: #333; }}
-    .back-design .text {{ font-size: 0.8rem; letter-spacing: 3px; color: #111; font-weight: bold; text-shadow: 1px 1px 0px rgba(255,255,255,0.4); }}
+    /* DESIGN DU DOS */
+    .back-design {{ text-align: center; }}
+    .back-design .logo {{ font-size: 4rem; color: #111; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(255,255,255,0.6); }}
+    .back-design .text {{ font-size: 0.8rem; letter-spacing: 3px; color: #000; font-weight: bold; text-shadow: 0 1px 2px rgba(255,255,255,0.6); }}
 
     a {{ text-decoration: none; color: inherit; display: block; height: 100%; }}
 </style>
@@ -241,7 +278,13 @@ carousel_html = f"""
     window.addEventListener('mousemove', (e) => {{ if (!isDragging) return; const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
     window.addEventListener('mouseup', () => {{ if (isDragging) {{ isDragging = false; inertiaLoop(); }} }});
     
-    function inertiaLoop() {{ if (Math.abs(velocity) < 0.05) return; velocity *= 0.95; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; animationId = requestAnimationFrame(inertiaLoop); }}
+    function inertiaLoop() {{ 
+        if (Math.abs(velocity) < 0.05) return; 
+        velocity *= 0.95; 
+        currentRotation += velocity; 
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`; 
+        animationId = requestAnimationFrame(inertiaLoop); 
+    }}
     
     scene.addEventListener('touchstart', (e) => {{ isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; if (animationId) cancelAnimationFrame(animationId); }});
     window.addEventListener('touchmove', (e) => {{ if (!isDragging) return; const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
