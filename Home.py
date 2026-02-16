@@ -3,12 +3,11 @@ import streamlit.components.v1 as components
 import base64
 import os
 
-st.set_page_config(layout="wide", page_title="Mon Portfolio 3D", page_icon="🏦")
+# Configuration de la page
+st.set_page_config(layout="wide", page_title="Portfolio Finance 3D", page_icon="🏦")
 
-# --- CONFIGURATION DES PROJETS ---
-# Ajoutez vos projets ici. 
-# image: le nom du fichier dans le dossier 'assets'
-# link: le lien vers l'app streamlit déployée
+# --- 1. CONFIGURATION DES PROJETS ---
+# (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
         "title": "Analyse Bourse",
@@ -28,45 +27,44 @@ projects = [
         "link": "https://mon-pricing.streamlit.app",
         "desc": "Modèle Black-Scholes"
     },
-    # Vous pouvez dupliquer des projets pour tester l'effet carrousel si vous n'en avez que 3
+    # J'ai gardé des doublons pour que le carrousel ait une belle forme (5 éléments min conseillé)
     {
         "title": "Optimisation Markowitz",
-        "image": "bourse.jpg", # Image temporaire
+        "image": "bourse.jpg",
         "link": "#",
         "desc": "Allocation d'actifs"
     },
      {
         "title": "Analyse Sentiment",
-        "image": "crypto.jpg", # Image temporaire
+        "image": "crypto.jpg",
         "link": "#",
         "desc": "NLP sur news financières"
     }
 ]
 
-# --- FONCTION UTILITAIRE : CHARGEMENT IMAGES ---
+# --- 2. FONCTION UTILITAIRE : CHARGEMENT IMAGES ---
 def get_base64_image(image_filename):
     """Transforme une image locale en code pour le HTML"""
+    # On gère le cas où l'image n'existe pas pour éviter les erreurs
     image_path = os.path.join("assets", image_filename)
-    try:
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    except FileNotFoundError:
-        # Retourne une image vide grise si fichier pas trouvé
-        return "" 
+    if not os.path.exists(image_path):
+        return "" # Retourne vide si pas d'image
+        
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
-# --- GÉNÉRATION DU CODE HTML/CSS/JS ---
+# --- 3. GÉNÉRATION DU CODE HTML/CSS/JS ---
 html_cards = ""
 angle = 360 / len(projects)
-tz = 400 # Distance du centre (Profondeur) - Augmentez si les cartes se chevauchent
+tz = 400 # Rayon du carrousel (Eloignement du centre)
 
 for i, project in enumerate(projects):
     img_b64 = get_base64_image(project["image"])
     
-    # Création de chaque carte (HTML)
+    # Création de chaque carte HTML
     html_cards += f"""
     <div class="card" style="transform: rotateY({i * angle}deg) translateZ({tz}px);">
-        <a href="{project['link']}" target="_blank">
-            <div class="card-content">
+        <a href="{project['link']}" target="_blank" draggable="false"> <div class="card-content">
                 <img src="data:image/jpeg;base64,{img_b64}" alt="{project['title']}">
                 <div class="info">
                     <h3>{project['title']}</h3>
@@ -92,7 +90,13 @@ carousel_html = f"""
         display: flex;
         justify-content: center;
         align-items: center;
-        overflow: hidden; 
+        overflow: hidden;
+        cursor: grab; /* Curseur main ouverte par défaut */
+        user-select: none; /* Empêche de sélectionner le texte pendant qu'on glisse */
+    }}
+
+    .scene:active {{
+        cursor: grabbing; /* Curseur main fermée quand on clique */
     }}
 
     .carousel {{
@@ -100,7 +104,7 @@ carousel_html = f"""
         height: 350px;
         position: relative;
         transform-style: preserve-3d;
-        transition: transform 0.5s; /* Fluidité du mouvement */
+        transition: transform 0.1s; /* Transition très courte pour réactivité immédiate au drag */
     }}
 
     .card {{
@@ -114,14 +118,14 @@ carousel_html = f"""
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 0 15px rgba(0,0,0,0.5);
         backdrop-filter: blur(5px);
-        transition: all 0.3s;
-        cursor: pointer;
-        overflow: hidden;
+        transition: border 0.3s, box-shadow 0.3s; /* On garde l'effet hover */
+        /* Pas de transition sur transform ici pour éviter les conflits avec le carrousel global */
     }}
 
     .card:hover {{
         border: 2px solid #00f2ff;
         box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
+        z-index: 10; /* Met la carte survolée au premier plan */
     }}
 
     .card-content img {{
@@ -129,18 +133,20 @@ carousel_html = f"""
         height: 200px;
         object-fit: cover;
         border-bottom: 1px solid rgba(255,255,255,0.1);
+        pointer-events: none; /* Important: empêche l'image de bloquer le drag */
     }}
 
     .info {{
         padding: 15px;
         color: white;
         text-align: center;
+        pointer-events: none; /* Le texte ne bloque pas le drag */
     }}
     
     .info h3 {{ margin: 0 0 5px 0; font-size: 1.2rem; }}
     .info p {{ margin: 0; font-size: 0.9rem; color: #ccc; }}
 
-    a {{ text-decoration: none; }}
+    a {{ text-decoration: none; color: inherit; display: block; height: 100%; }}
 
 </style>
 </head>
@@ -156,27 +162,60 @@ carousel_html = f"""
     const carousel = document.getElementById('carousel');
     const scene = document.querySelector('.scene');
     
-    // Variables pour la gestion de la souris
-    let currentAngle = 0;
-    let targetAngle = 0;
+    let isDragging = false;
+    let startX = 0;
+    let currentRotation = 0;
+    let previousRotation = 0;
 
-    // Écoute le mouvement de la souris sur toute la scène
-    scene.addEventListener('mousemove', (e) => {{
-        // Calcul de la position de la souris en % de la largeur (0 à 1)
-        const x = e.clientX / window.innerWidth;
+    // 1. Quand on appuie sur la souris
+    scene.addEventListener('mousedown', (e) => {{
+        isDragging = true;
+        startX = e.clientX;
+        // On désactive la transition longue pour que le mouvement colle à la souris
+        carousel.style.transition = 'none'; 
+    }});
+
+    // 2. Quand on bouge la souris
+    window.addEventListener('mousemove', (e) => {{
+        if (!isDragging) return;
         
-        // On mappe cette position sur une rotation (ex: de -180 à +180 degrés)
-        // Inversez le signe pour changer le sens de rotation
-        targetAngle = (x - 0.5) * 360 * 1.5; 
+        const x = e.clientX;
+        // Calcul de la distance parcourue
+        const walk = (x - startX) * 0.5; // 0.5 est la sensibilité (vitesse)
         
-        carousel.style.transform = `rotateY(${{targetAngle}}deg)`;
+        currentRotation = previousRotation + walk;
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+    }});
+
+    // 3. Quand on relâche la souris
+    window.addEventListener('mouseup', () => {{
+        if (isDragging) {{
+            isDragging = false;
+            previousRotation = currentRotation;
+            // On remet une petite transition pour l'inertie ou les clics futurs
+            carousel.style.transition = 'transform 0.5s ease-out';
+        }}
     }});
     
-    // Ajout pour le tactile (Mobile)
-    scene.addEventListener('touchmove', (e) => {{
-        const x = e.touches[0].clientX / window.innerWidth;
-        targetAngle = (x - 0.5) * 360 * 2;
-        carousel.style.transform = `rotateY(${{targetAngle}}deg)`;
+    // Support tactile (Mobile)
+    scene.addEventListener('touchstart', (e) => {{
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        carousel.style.transition = 'none';
+    }});
+
+    window.addEventListener('touchmove', (e) => {{
+        if (!isDragging) return;
+        const x = e.touches[0].clientX;
+        const walk = (x - startX) * 0.8; 
+        currentRotation = previousRotation + walk;
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+    }});
+
+    window.addEventListener('touchend', () => {{
+        isDragging = false;
+        previousRotation = currentRotation;
+        carousel.style.transition = 'transform 0.5s ease-out';
     }});
 
 </script>
@@ -185,8 +224,8 @@ carousel_html = f"""
 """
 
 # --- AFFICHAGE DANS STREAMLIT ---
-st.title("🏦 Mes Projets Finance 3D")
-st.markdown("Baladez votre souris de gauche à droite pour faire tourner le carrousel 👇")
+st.title("🏦 Mes Projets Finance")
+st.markdown("👈 **Cliquez et glissez** horizontalement pour faire tourner le carrousel.")
 
-# On injecte le code HTML avec une hauteur suffisante
+# Injection du HTML
 components.html(carousel_html, height=650)
