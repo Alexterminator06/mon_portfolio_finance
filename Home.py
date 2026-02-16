@@ -6,6 +6,9 @@ import os
 # --- 1. CONFIGURATION ---
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
+# Texture Marbre Blanc (Image libre de droits)
+MARBLE_TEXTURE = "https://images.unsplash.com/photo-1581009137042-c552e485697a?q=80&w=500&auto=format&fit=crop"
+
 # --- 2. FONCTIONS (Déplacée en haut pour être utilisée partout) ---
 def get_base64_image(image_filename):
     """Charge une image locale et la convertit en chaîne Base64"""
@@ -146,54 +149,47 @@ carousel_html = f"""
 <head>
 <style>
     body {{ 
-        margin: 0; 
-        padding: 0;
-        width: 100vw;
-        height: 100vh;
+        margin: 0; padding: 0;
+        width: 100vw; height: 100vh;
         overflow: hidden; 
-        /* C'est ici que l'image locale est injectée */
         {bg_css_rule}
         background-size: cover;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
     }}
     
+    /* Filtre sombre sur le fond (réglé à 0.3 pour laisser passer la lumière) */
     body::before {{
         content: "";
         position: absolute;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0); /* Filtre sombre */
+        background: rgba(0, 0, 0, 0.3);
         z-index: -1;
     }}
 
     .scene {{
-        width: 100%;
-        height: 100vh;
+        width: 100%; height: 100vh;
         perspective: 1200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: grab;
-        user-select: none;
+        display: flex; justify-content: center; align-items: center;
+        cursor: grab; user-select: none;
     }}
-    
     .scene:active {{ cursor: grabbing; }}
 
     .carousel {{
-        width: 260px; 
-        height: 360px;
+        width: 260px; height: 360px;
         position: relative;
         transform-style: preserve-3d;
     }}
 
     .card-container {{
         position: absolute;
-        width: 260px;
-        height: 360px;
-        left: 0;
-        top: 0;
+        width: 260px; height: 360px;
+        left: 0; top: 0;
         transform-style: preserve-3d;
         transform: rotateY(var(--angle)) translateZ(var(--tz));
-        -webkit-box-reflect: below 20px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4));
+        
+        /* Reflet sous la carte */
+        -webkit-box-reflect: below 10px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.3));
+        
         animation: float 6s ease-in-out infinite;
     }}
     
@@ -205,68 +201,95 @@ carousel_html = f"""
 
     @keyframes float {{
         0% {{ transform: translateY(0px) rotateY(var(--angle)) translateZ(var(--tz)); }}
-        50% {{ transform: translateY(-20px) rotateY(var(--angle)) translateZ(var(--tz)); }}
+        50% {{ transform: translateY(-15px) rotateY(var(--angle)) translateZ(var(--tz)); }}
         100% {{ transform: translateY(0px) rotateY(var(--angle)) translateZ(var(--tz)); }}
     }}
 
     .card {{
-        width: 100%;
-        height: 100%;
+        width: 100%; height: 100%;
         position: relative;
         transform-style: preserve-3d;
         transition: transform 0.3s;
     }}
 
+    /* --- GESTION DES FACES ET DE L'ÉPAISSEUR --- */
     .face {{
         position: absolute;
-        width: 100%;
-        height: 100%;
-        backface-visibility: hidden;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+        border-radius: 4px; /* Un peu moins arrondi pour faire "Bloc de pierre" */
+        backface-visibility: visible; /* Important pour voir les côtés */
     }}
 
+    /* Face AVANT */
     .front {{
-        background: rgba(20, 20, 30, 0.85);
+        width: 260px; height: 360px;
+        background: rgba(20, 20, 30, 0.9);
         border: 1px solid rgba(255, 215, 0, 0.3);
-        backdrop-filter: blur(8px);
+        transform: translateZ(15px); /* On avance de la moitié de l'épaisseur */
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }}
+
+    /* Face ARRIÈRE (Le Marbre Blanc) */
+    .back {{
+        width: 260px; height: 360px;
+        transform: rotateY(180deg) translateZ(15px); /* On recule de la moitié */
+        background: url('{MARBLE_TEXTURE}');
+        background-size: cover;
+        border: 1px solid #ccc;
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.1); /* Ombre interne pour le réalisme */
+    }}
+
+    /* Côté DROIT */
+    .right {{
+        width: 30px; height: 360px; /* Largeur = épaisseur de la carte */
+        right: 0; /* Collé à droite */
+        transform-origin: right;
+        transform: rotateY(90deg) translateZ(0px); /* Le pivot fait tout le travail */
+        background: url('{MARBLE_TEXTURE}');
+        background-size: cover;
+        filter: brightness(0.9); /* Un peu plus sombre pour simuler l'ombre */
+    }}
+
+    /* Côté GAUCHE */
+    .left {{
+        width: 30px; height: 360px;
+        left: 0;
+        transform-origin: left;
+        transform: rotateY(-90deg) translateZ(0px);
+        background: url('{MARBLE_TEXTURE}');
+        background-size: cover;
+        filter: brightness(0.9);
     }}
     
+    /* --- CONTENU --- */
+
     .front:hover {{
         border-color: #ffd700;
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
     }}
 
     .card-content img {{
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
+        width: 100%; height: 220px; object-fit: cover;
         border-bottom: 1px solid rgba(255,215,0,0.2);
         pointer-events: none;
+        border-radius: 4px 4px 0 0;
     }}
 
     .info {{
-        padding: 20px;
-        color: white;
-        text-align: center;
-        pointer-events: none;
+        padding: 20px; color: white; text-align: center; pointer-events: none;
     }}
-    
     .info h3 {{ margin: 0 0 8px 0; font-size: 1.3rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }}
     .info p {{ margin: 0; font-size: 0.9rem; color: #bbb; font-style: italic; }}
 
-    .back {{
-        transform: rotateY(180deg);
-        background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
-        border: 1px solid #444;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    /* Design du dos (Marbre) */
+    .back-design {{ text-align: center; opacity: 0.7; }}
+    .back-design .logo {{ font-size: 4rem; margin-bottom: 10px; color: #333; }} /* Logo gris foncé */
+    .back-design .text {{ 
+        font-size: 0.8rem; letter-spacing: 3px; 
+        color: #111; /* Texte noir */
+        font-weight: bold; 
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
     }}
-
-    .back-design {{ text-align: center; opacity: 0.5; }}
-    .back-design .logo {{ font-size: 5rem; margin-bottom: 10px; }}
-    .back-design .text {{ font-size: 0.8rem; letter-spacing: 3px; color: #ffd700; font-weight: bold; }}
 
     a {{ text-decoration: none; color: inherit; display: block; height: 100%; }}
 
@@ -293,58 +316,41 @@ carousel_html = f"""
     let animationId = null;
 
     scene.addEventListener('mousedown', (e) => {{
-        isDragging = true;
-        startX = e.clientX;
-        lastX = e.clientX;
-        velocity = 0;
-        if (animationId) cancelAnimationFrame(animationId);
+        isDragging = true; startX = e.clientX; lastX = e.clientX;
+        velocity = 0; if (animationId) cancelAnimationFrame(animationId);
     }});
-
     window.addEventListener('mousemove', (e) => {{
         if (!isDragging) return;
-        const x = e.clientX;
-        const delta = x - lastX;
-        velocity = delta * 0.3;
-        currentRotation += velocity;
+        const x = e.clientX; const delta = x - lastX;
+        velocity = delta * 0.3; currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
         lastX = x;
     }});
-
     window.addEventListener('mouseup', () => {{
-        if (isDragging) {{
-            isDragging = false;
-            inertiaLoop();
-        }}
+        if (isDragging) {{ isDragging = false; inertiaLoop(); }}
     }});
     
     function inertiaLoop() {{
         if (Math.abs(velocity) < 0.05) return;
-        velocity *= 0.95;
-        currentRotation += velocity;
+        velocity *= 0.95; currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
         animationId = requestAnimationFrame(inertiaLoop);
     }}
     
     scene.addEventListener('touchstart', (e) => {{
-        isDragging = true;
-        startX = e.touches[0].clientX;
-        lastX = e.touches[0].clientX;
+        isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX;
         if (animationId) cancelAnimationFrame(animationId);
     }});
     window.addEventListener('touchmove', (e) => {{
         if (!isDragging) return;
-        const x = e.touches[0].clientX;
-        const delta = x - lastX;
-        velocity = delta * 0.5;
-        currentRotation += velocity;
+        const x = e.touches[0].clientX; const delta = x - lastX;
+        velocity = delta * 0.5; currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
         lastX = x;
     }});
     window.addEventListener('touchend', () => {{
-        isDragging = false;
-        inertiaLoop();
+        isDragging = false; inertiaLoop();
     }});
-
 </script>
 </body>
 </html>
