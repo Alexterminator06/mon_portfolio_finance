@@ -41,8 +41,24 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 1. CONFIGURATION DES PROJETS ---
-BACKGROUND_URL = "assets\chess-checkmated-chess-pieces-black-white-957312.jpeg"
+def get_base64_image(image_filename):
+    """Charge une image locale et la convertit en chaîne Base64"""
+    image_path = os.path.join("assets", image_filename)
+    if not os.path.exists(image_path):
+        return "" 
+    
+    # On détecte l'extension pour le bon format MIME (png ou jpg)
+    _, ext = os.path.splitext(image_filename)
+    ext = ext.replace('.', '')
+    # Si c'est du jpg, on normalise en jpeg
+    if ext == 'jpg': ext = 'jpeg'
+    
+    with open(image_path, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
+        return f"data:image/{ext};base64,{encoded}"
+    
+BACKGROUND_IMAGE_NAME = "background.jpg"
+    
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
