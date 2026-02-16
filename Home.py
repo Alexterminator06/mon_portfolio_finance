@@ -99,12 +99,6 @@ projects = [
     }
 ]
 
-def get_base64_image(image_filename):
-    image_path = os.path.join("assets", image_filename)
-    if not os.path.exists(image_path):
-        return "" 
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
 
 # --- 4. HTML GENERATION ---
 html_cards = ""
@@ -137,6 +131,7 @@ for i, project in enumerate(projects):
         </div>
     </div>
     """
+bg_css_rule = f"background: url('{background_b64}') no-repeat center center fixed;" if background_b64 else "background: #1a1a1a;"
 
 carousel_html = f"""
 <!DOCTYPE html>
