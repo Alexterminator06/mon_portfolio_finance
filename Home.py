@@ -7,7 +7,7 @@ import os
 st.set_page_config(layout="wide", page_title="Portfolio Finance 3D", page_icon="🏦")
 
 # --- 1. CONFIGURATION DES PROJETS ---
-BACKGROUND_URL = "https://images.unsplash.com/photo-1565514020176-6c2235c8d37c?q=80&w=2500&auto=format&fit=crop"
+BACKGROUND_URL = "https://unsplash.com/fr/photos/batiment-en-beton-gris-pendant-la-journee-WgUHuGSWPVM"
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
