@@ -7,7 +7,7 @@ import os
 st.set_page_config(layout="wide", page_title="Portfolio Finance 3D", page_icon="🏦")
 
 # --- 1. CONFIGURATION DES PROJETS ---
-BACKGROUND_URL = "https://unsplash.com/fr/photos/batiment-en-beton-gris-pendant-la-journee-WgUHuGSWPVM"
+BACKGROUND_URL = "C:\\Users\\Alexei\\Pictures\\Saved Pictures\\chess-checkmated-chess-pieces-black-white-957312.jpeg"
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
@@ -50,7 +50,6 @@ projects = [
 
 # --- 2. FONCTIONS ---
 def get_base64_image(image_filename):
-    """Charge une image locale pour les cartes"""
     image_path = os.path.join("assets", image_filename)
     if not os.path.exists(image_path):
         return "" 
@@ -60,13 +59,16 @@ def get_base64_image(image_filename):
 # --- 3. GÉNÉRATION DU CARROUSEL ---
 html_cards = ""
 angle = 360 / len(projects)
-tz = 450 # J'ai augmenté un peu l'écartement pour l'effet "Hall"
+tz = 450 
 
 for i, project in enumerate(projects):
     img_b64 = get_base64_image(project["image"])
     
+    # --- CORRECTION ICI ---
+    # On définit les variables CSS --angle et --tz directement dans le style de l'élément
+    # Cela permet à l'animation (@keyframes) de les récupérer
     html_cards += f"""
-    <div class="card-container" style="transform: rotateY({i * angle}deg) translateZ({tz}px);">
+    <div class="card-container" style="--angle: {i * angle}deg; --tz: {tz}px;">
         <div class="card">
             <div class="face front">
                 <a href="{project['link']}" target="_blank" draggable="false">
@@ -94,7 +96,6 @@ carousel_html = f"""
 <html>
 <head>
 <style>
-    /* FOND D'ÉCRAN IMMERSIF */
     body {{ 
         margin: 0; 
         overflow: hidden; 
@@ -103,19 +104,18 @@ carousel_html = f"""
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
     }}
     
-    /* On assombrit l'image de fond pour que les cartes ressortent bien */
     body::before {{
         content: "";
         position: absolute;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6); /* Filtre sombre */
+        background: rgba(0, 0, 0, 0.6);
         z-index: -1;
     }}
 
     .scene {{
         width: 100%;
-        height: 700px; /* Plus haut pour bien voir le sol */
-        perspective: 1200px; /* Perspective augmentée pour la profondeur du hall */
+        height: 700px;
+        perspective: 1200px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -130,7 +130,7 @@ carousel_html = f"""
         height: 360px;
         position: relative;
         transform-style: preserve-3d;
-        margin-top: -50px; /* On remonte un peu le carrousel par rapport au sol */
+        margin-top: -50px;
     }}
 
     .card-container {{
@@ -141,21 +141,22 @@ carousel_html = f"""
         top: 0;
         transform-style: preserve-3d;
         
-        /* C'EST ICI QUE SE JOUE L'EFFET MIROIR / SOL EN MARBRE */
-        /* Note: Fonctionne sur Chrome/Safari/Edge. Firefox a un support limité. */
+        /* Initialisation de la position avec les variables CSS injectées par Python */
+        transform: rotateY(var(--angle)) translateZ(var(--tz));
+
         -webkit-box-reflect: below 20px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4));
         
-        /* Animation de lévitation */
+        /* L'animation utilise maintenant les mêmes variables */
         animation: float 6s ease-in-out infinite;
     }}
     
-    /* Décalage de l'animation pour chaque carte pour qu'elles ne bougent pas toutes en même temps */
     .card-container:nth-child(1) {{ animation-delay: 0s; }}
     .card-container:nth-child(2) {{ animation-delay: 1s; }}
     .card-container:nth-child(3) {{ animation-delay: 2s; }}
     .card-container:nth-child(4) {{ animation-delay: 3s; }}
     .card-container:nth-child(5) {{ animation-delay: 4s; }}
 
+    /* --- CORRECTION DE L'ANIMATION --- */
     @keyframes float {{
         0% {{ transform: translateY(0px) rotateY(var(--angle)) translateZ(var(--tz)); }}
         50% {{ transform: translateY(-20px) rotateY(var(--angle)) translateZ(var(--tz)); }}
@@ -176,18 +177,17 @@ carousel_html = f"""
         height: 100%;
         backface-visibility: hidden;
         border-radius: 10px;
-        /* Ombre portée plus forte pour le réalisme 3D */
         box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     }}
 
     .front {{
-        background: rgba(20, 20, 30, 0.85); /* Fond sombre semi-transparent */
-        border: 1px solid rgba(255, 215, 0, 0.3); /* Bordure dorée subtile */
+        background: rgba(20, 20, 30, 0.85);
+        border: 1px solid rgba(255, 215, 0, 0.3);
         backdrop-filter: blur(8px);
     }}
     
     .front:hover {{
-        border-color: #ffd700; /* Or vif au survol */
+        border-color: #ffd700;
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
     }}
 
@@ -246,7 +246,6 @@ carousel_html = f"""
     let lastX = 0;
     let animationId = null;
 
-    // --- GESTION DU MOUVEMENT (Identique à avant) ---
     scene.addEventListener('mousedown', (e) => {{
         isDragging = true;
         startX = e.clientX;
@@ -274,13 +273,12 @@ carousel_html = f"""
     
     function inertiaLoop() {{
         if (Math.abs(velocity) < 0.05) return;
-        velocity *= 0.95; // Friction
+        velocity *= 0.95;
         currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
         animationId = requestAnimationFrame(inertiaLoop);
     }}
     
-    // Support Mobile
     scene.addEventListener('touchstart', (e) => {{
         isDragging = true;
         startX = e.touches[0].clientX;
@@ -306,8 +304,6 @@ carousel_html = f"""
 </html>
 """
 
-# --- AFFICHAGE ---
-# On utilise components.html avec une hauteur suffisante pour l'effet miroir
 st.title("🏛️ Mon Portfolio")
 st.markdown("**Analysez. Cliquez. Investissez.**")
 components.html(carousel_html, height=750)
