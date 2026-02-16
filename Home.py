@@ -47,46 +47,59 @@ projects = [
     }
 ]
 
-# --- 2. FONCTION UTILITAIRE : CHARGEMENT IMAGES ---
+# --- 2. FONCTION IMAGE ---
 def get_base64_image(image_filename):
-    """Transforme une image locale en code pour le HTML"""
-    # On gère le cas où l'image n'existe pas pour éviter les erreurs
     image_path = os.path.join("assets", image_filename)
     if not os.path.exists(image_path):
-        return "" # Retourne vide si pas d'image
-        
+        return "" 
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. GÉNÉRATION DU CODE HTML/CSS/JS ---
+# --- 3. GÉNÉRATION HTML/CSS/JS ---
 html_cards = ""
 angle = 360 / len(projects)
-tz = 400 # Rayon du carrousel (Eloignement du centre)
+tz = 400 
 
 for i, project in enumerate(projects):
     img_b64 = get_base64_image(project["image"])
     
-    # Création de chaque carte HTML
+    # Structure 3D complexe : Un conteneur qui contient le devant (front) et le derrière (back)
     html_cards += f"""
-    <div class="card" style="transform: rotateY({i * angle}deg) translateZ({tz}px);">
-        <a href="{project['link']}" target="_blank" draggable="false"> <div class="card-content">
-                <img src="data:image/jpeg;base64,{img_b64}" alt="{project['title']}">
-                <div class="info">
-                    <h3>{project['title']}</h3>
-                    <p>{project['desc']}</p>
+    <div class="card-container" style="transform: rotateY({i * angle}deg) translateZ({tz}px);">
+        <div class="card">
+            <div class="face front">
+                <a href="{project['link']}" target="_blank" draggable="false">
+                    <div class="card-content">
+                        <img src="data:image/jpeg;base64,{img_b64}" alt="{project['title']}">
+                        <div class="info">
+                            <h3>{project['title']}</h3>
+                            <p>{project['desc']}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="face back">
+                <div class="back-design">
+                    <div class="logo">🏦</div>
+                    <div class="text">CONFIDENTIAL</div>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
     """
 
-# Le bloc complet HTML/CSS/JS
 carousel_html = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <style>
-    body {{ margin: 0; overflow: hidden; background-color: #0e1117; font-family: sans-serif; }}
+    /* FOND D'ÉCRAN : Dégradé radial sombre et classe */
+    body {{ 
+        margin: 0; 
+        overflow: hidden; 
+        background: radial-gradient(circle at center, #2b303b 0%, #0e1117 100%);
+        font-family: 'Segoe UI', sans-serif; 
+    }}
     
     .scene {{
         width: 100%;
@@ -95,42 +108,58 @@ carousel_html = f"""
         display: flex;
         justify-content: center;
         align-items: center;
-        overflow: hidden;
-        cursor: grab; /* Curseur main ouverte par défaut */
-        user-select: none; /* Empêche de sélectionner le texte pendant qu'on glisse */
+        cursor: grab;
+        user-select: none;
     }}
-
-    .scene:active {{
-        cursor: grabbing; /* Curseur main fermée quand on clique */
-    }}
+    
+    .scene:active {{ cursor: grabbing; }}
 
     .carousel {{
         width: 250px; 
         height: 350px;
         position: relative;
         transform-style: preserve-3d;
-        transition: transform 0.1s; /* Transition très courte pour réactivité immédiate au drag */
+        /* Pas de transition ici car le JS gère l'animation fluide */
     }}
 
-    .card {{
+    .card-container {{
         position: absolute;
         width: 240px;
         height: 340px;
         left: 5px;
         top: 5px;
-        border-radius: 15px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        backdrop-filter: blur(5px);
-        transition: border 0.3s, box-shadow 0.3s; /* On garde l'effet hover */
-        /* Pas de transition sur transform ici pour éviter les conflits avec le carrousel global */
+        transform-style: preserve-3d; /* Permet aux faces d'être en 3D */
     }}
 
-    .card:hover {{
-        border: 2px solid #00f2ff;
-        box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
-        z-index: 10; /* Met la carte survolée au premier plan */
+    .card {{
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.3s;
+    }}
+
+    /* DESIGN COMMUN DES FACES */
+    .face {{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden; /* Cache l'arrière quand on est devant */
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        overflow: hidden;
+    }}
+
+    /* --- FACE AVANT --- */
+    .front {{
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }}
+    
+    .front:hover {{
+        border-color: #00d4ff;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
     }}
 
     .card-content img {{
@@ -138,18 +167,41 @@ carousel_html = f"""
         height: 200px;
         object-fit: cover;
         border-bottom: 1px solid rgba(255,255,255,0.1);
-        pointer-events: none; /* Important: empêche l'image de bloquer le drag */
+        pointer-events: none;
     }}
 
     .info {{
         padding: 15px;
         color: white;
         text-align: center;
-        pointer-events: none; /* Le texte ne bloque pas le drag */
+        pointer-events: none;
     }}
     
-    .info h3 {{ margin: 0 0 5px 0; font-size: 1.2rem; }}
-    .info p {{ margin: 0; font-size: 0.9rem; color: #ccc; }}
+    .info h3 {{ margin: 0 0 5px 0; font-size: 1.1rem; color: #fff; }}
+    .info p {{ margin: 0; font-size: 0.85rem; color: #a0a0a0; }}
+
+    /* --- FACE ARRIÈRE (Design Sobre) --- */
+    .back {{
+        transform: rotateY(180deg); /* La retourne par défaut */
+        background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+        border: 1px solid #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
+
+    .back-design {{
+        text-align: center;
+        opacity: 0.3; /* Discret */
+    }}
+
+    .back-design .logo {{ font-size: 4rem; margin-bottom: 10px; }}
+    .back-design .text {{ 
+        font-size: 0.8rem; 
+        letter-spacing: 2px; 
+        color: #d4af37; /* Or métallique */
+        font-weight: bold;
+    }}
 
     a {{ text-decoration: none; color: inherit; display: block; height: 100%; }}
 
@@ -167,60 +219,92 @@ carousel_html = f"""
     const carousel = document.getElementById('carousel');
     const scene = document.querySelector('.scene');
     
+    // Variables physiques
     let isDragging = false;
     let startX = 0;
     let currentRotation = 0;
     let previousRotation = 0;
+    
+    let velocity = 0;       // Vitesse actuelle
+    let lastX = 0;          // Position précédente pour calculer la vitesse
+    let isInertia = false;  // Est-ce qu'on est en phase d'inertie ?
+    let animationId = null;
 
-    // 1. Quand on appuie sur la souris
+    // 1. DÉBUT DU DRAG
     scene.addEventListener('mousedown', (e) => {{
         isDragging = true;
+        isInertia = false;
         startX = e.clientX;
-        // On désactive la transition longue pour que le mouvement colle à la souris
-        carousel.style.transition = 'none'; 
+        lastX = e.clientX;
+        velocity = 0;
+        
+        // Annule l'animation en cours s'il y en a une
+        if (animationId) cancelAnimationFrame(animationId);
     }});
 
-    // 2. Quand on bouge la souris
+    // 2. MOUVEMENT
     window.addEventListener('mousemove', (e) => {{
         if (!isDragging) return;
         
         const x = e.clientX;
-        // Calcul de la distance parcourue
-        const walk = (x - startX) * 0.5; // 0.5 est la sensibilité (vitesse)
+        const delta = x - lastX;
         
-        currentRotation = previousRotation + walk;
+        // Calcul de la vitesse instantanée
+        velocity = delta * 0.3; // 0.3 = sensibilité
+        
+        currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+        
+        lastX = x;
     }});
 
-    // 3. Quand on relâche la souris
+    // 3. FIN DU DRAG (LANCEMENT INERTIE)
     window.addEventListener('mouseup', () => {{
         if (isDragging) {{
             isDragging = false;
-            previousRotation = currentRotation;
-            // On remet une petite transition pour l'inertie ou les clics futurs
-            carousel.style.transition = 'transform 0.5s ease-out';
+            inertiaLoop(); // On lance la boucle d'inertie
         }}
     }});
     
-    // Support tactile (Mobile)
+    // --- BOUCLE D'ANIMATION (INERTIE) ---
+    function inertiaLoop() {{
+        // Si la vitesse est très faible, on arrête tout pour économiser le CPU
+        if (Math.abs(velocity) < 0.05) {{
+            return;
+        }}
+
+        // Friction : on réduit la vitesse à chaque image (0.95 = 5% de perte)
+        velocity *= 0.95;
+        
+        currentRotation += velocity;
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+
+        // On demande la prochaine frame
+        animationId = requestAnimationFrame(inertiaLoop);
+    }}
+    
+    // --- SUPPORT MOBILE (Touch) ---
     scene.addEventListener('touchstart', (e) => {{
         isDragging = true;
+        isInertia = false;
         startX = e.touches[0].clientX;
-        carousel.style.transition = 'none';
+        lastX = e.touches[0].clientX;
+        if (animationId) cancelAnimationFrame(animationId);
     }});
 
     window.addEventListener('touchmove', (e) => {{
         if (!isDragging) return;
         const x = e.touches[0].clientX;
-        const walk = (x - startX) * 0.8; 
-        currentRotation = previousRotation + walk;
+        const delta = x - lastX;
+        velocity = delta * 0.5;
+        currentRotation += velocity;
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+        lastX = x;
     }});
 
     window.addEventListener('touchend', () => {{
         isDragging = false;
-        previousRotation = currentRotation;
-        carousel.style.transition = 'transform 0.5s ease-out';
+        inertiaLoop();
     }});
 
 </script>
@@ -228,9 +312,6 @@ carousel_html = f"""
 </html>
 """
 
-# --- AFFICHAGE DANS STREAMLIT ---
-st.title("🏦 Mes Projets Finance")
-st.markdown("👈 **Cliquez et glissez** horizontalement pour faire tourner le carrousel.")
-
-# Injection du HTML
+st.title("🏦 Mon Hub Finance")
+st.markdown("Faites tourner le carrousel. Observez l'inertie et le design au dos des cartes.")
 components.html(carousel_html, height=650)
