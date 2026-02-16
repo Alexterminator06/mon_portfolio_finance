@@ -7,7 +7,7 @@ import os
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
 # Texture Marbre Blanc (Image libre de droits)
-MARBLE_TEXTURE = "https://images.unsplash.com/photo-1581009137042-c552e485697a?q=80&w=500&auto=format&fit=crop"
+MARBLE_TEXTURE = "https://unsplash.com/fr/photos/gros-plan-dune-surface-de-marbre-blanc-li0iC0rjvvg"
 
 # --- 2. FONCTIONS (Déplacée en haut pour être utilisée partout) ---
 def get_base64_image(image_filename):
