@@ -34,10 +34,10 @@ background_b64 = get_base64_image(BACKGROUND_IMAGE_NAME)
 
 projects = [
     {
-        "title": "Analyse Bourse",
-        "image": "bourse.jpg", 
-        "link": "https://mon-projet-bourse.streamlit.app",
-        "desc": "Visualisation & KPIs"
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
     },
     {
         "title": "Bot Trading",
