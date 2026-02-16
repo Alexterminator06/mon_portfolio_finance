@@ -40,28 +40,34 @@ projects = [
         "desc": "Trading Automatique et Signaux"
     },
     {
-        "title": "Bot Trading",
-        "image": "crypto.jpg",
-        "link": "https://mon-bot-bitcoin.streamlit.app",
-        "desc": "Stratégie Golden Cross"
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
     },
     {
-        "title": "Pricing Options",
-        "image": "option.jpg",
-        "link": "https://mon-pricing.streamlit.app",
-        "desc": "Modèle Black-Scholes"
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
     },
     {
-        "title": "Optimisation",
-        "image": "bourse.jpg",
-        "link": "#",
-        "desc": "Frontière Markowitz"
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
     },
      {
-        "title": "NLP Finance",
-        "image": "crypto.jpg",
-        "link": "#",
-        "desc": "Analyse de Sentiment"
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
+    },
+    {
+        "title": "Trading Bot",
+        "image": "projet_bourse.jpg", 
+        "link": "https://bitcoin-trading-bot.streamlit.app/",
+        "desc": "Trading Automatique et Signaux"
     }
 ]
 
