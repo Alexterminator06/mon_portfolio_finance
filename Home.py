@@ -134,7 +134,7 @@ carousel_html = f"""
         width: 100vw;
         height: 100vh;
         overflow: hidden; 
-        background: url('{BACKGROUND_URL}') no-repeat center center fixed; 
+        background: BACKGROUND_URL; 
         background-size: cover;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
     }}
