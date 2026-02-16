@@ -6,37 +6,43 @@ import os
 # --- 1. CONFIGURATION ---
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
-# --- 2. CSS "NUCLEAR" : SUPPRESSION TOTALE DES MARGES ET SCROLLBARS ---
+# --- 2. CSS "FORCE BRUTE" POUR LE CLOUD ---
 st.markdown("""
     <style>
-        /* 1. Supprime les marges du conteneur principal */
+        /* 1. On cache tous les éléments d'interface de Streamlit */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+        [data-testid="stToolbar"] {visibility: hidden;} /* Cache le menu développeur en haut */
+        .stApp > header {display: none;}
+        
+        /* 2. On supprime le padding du conteneur principal */
         .block-container {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
+            padding-top: 0rem;
+            padding-bottom: 0rem;
+            padding-left: 0rem;
+            padding-right: 0rem;
         }
         
-        /* 2. Cache le header et le footer */
-        header, footer {
-            visibility: hidden;
-            display: none;
-        }
-        
-        /* 3. Empêche le scroll sur la page principale Streamlit */
-        /* C'est la clé pour éviter la barre de défilement à droite */
-        .stApp {
-            overflow: hidden; 
-        }
-        
-        /* 4. Supprime l'espace blanc souvent présent sous les iframes */
+        /* 3. L'ARME SECRÈTE : On force l'iframe du composant à passer en PLEIN ÉCRAN par-dessus tout */
         iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            z-index: 99999; /* Passe au-dessus de tout, y compris la barre du bas Streamlit Cloud */
             display: block;
         }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 1. CONFIGURATION DES PROJETS ---
-BACKGROUND_URL = "C:\\Users\\Alexei\\Pictures\\Saved Pictures\\chess-checkmated-chess-pieces-black-white-957312.jpeg"
+BACKGROUND_URL = "assets\chess-checkmated-chess-pieces-black-white-957312.jpeg"
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
     {
@@ -84,7 +90,7 @@ def get_base64_image(image_filename):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 4. GÉNÉRATION DU HTML ---
+# --- 4. HTML GENERATION ---
 html_cards = ""
 angle = 360 / len(projects)
 tz = 450 
@@ -121,7 +127,7 @@ carousel_html = f"""
 <html>
 <head>
 <style>
-    /* LE FOND PREND TOUT L'ÉCRAN (viewport) */
+    /* CSS INTERNE DU COMPOSANT */
     body {{ 
         margin: 0; 
         padding: 0;
@@ -143,7 +149,7 @@ carousel_html = f"""
 
     .scene {{
         width: 100%;
-        height: 100%; /* Prend toute la hauteur du body */
+        height: 100vh;
         perspective: 1200px;
         display: flex;
         justify-content: center;
@@ -159,7 +165,6 @@ carousel_html = f"""
         height: 360px;
         position: relative;
         transform-style: preserve-3d;
-        /* On retire la marge négative car on est centré verticalement via Flexbox */
     }}
 
     .card-container {{
@@ -327,7 +332,7 @@ carousel_html = f"""
 </html>
 """
 
-# --- 5. AFFICHAGE FINAL ---
-# Le titre est supprimé car il gêne l'immersion.
-# Si vous voulez un titre, il faut l'intégrer DANS le HTML, pas via st.title()
-components.html(carousel_html, height=850, scrolling=False)
+# --- 5. RENDU FINAL ---
+# Le paramètre height ici n'importe plus vraiment car le CSS force 100vh, 
+# mais on le laisse pour éviter les erreurs.
+components.html(carousel_html, height=1000, scrolling=False)
