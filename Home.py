@@ -58,6 +58,7 @@ def get_base64_image(image_filename):
         return f"data:image/{ext};base64,{encoded}"
     
 BACKGROUND_IMAGE_NAME = "background.jpg"
+background_b64 = get_base64_image(BACKGROUND_IMAGE_NAME)
     
 # (Assurez-vous que vos images sont bien dans le dossier 'assets')
 projects = [
