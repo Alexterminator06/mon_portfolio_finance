@@ -229,7 +229,6 @@ carousel_html = f"""
 
     .face {{
         position: absolute; 
-        border: 1px solid rgba(0,0,0,0.1);
         box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
     }}
 
@@ -250,7 +249,6 @@ carousel_html = f"""
         filter: brightness(0.6);
         display: flex; justify-content: center; align-items: center;
         transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
-        border: 1px solid #888;
     }}
 
     /* 3. DROITE */
@@ -260,7 +258,6 @@ carousel_html = f"""
         filter: brightness(0.8); 
         left: calc((var(--w) - var(--d)) / 2);
         transform: translateX(calc(var(--w) / 2)) rotateY(90deg);
-        border: 1px solid #555;
     }}
 
     /* 4. GAUCHE */
@@ -270,7 +267,6 @@ carousel_html = f"""
         filter: brightness(0.6); 
         left: calc((var(--w) - var(--d)) / 2);
         transform: translateX(calc(var(--w) / -2)) rotateY(-90deg);
-        border: 1px solid #555;
     }}
 
     /* --- CONTENU --- */
@@ -296,23 +292,47 @@ carousel_html = f"""
 <script>
     const carousel = document.getElementById('carousel');
     const scene = document.querySelector('.scene');
-    let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0, animationId = null;
+    
+    // --- VITESSE DE ROTATION AUTO ---
+    let autoSpeed = -0.025; // Ajuste ici pour accélérer/ralentir
+    
+    let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0;
 
-    window.addEventListener('mousedown', (e) => {{ isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; if (animationId) cancelAnimationFrame(animationId); }});
-    window.addEventListener('mousemove', (e) => {{ if (!isDragging) return; const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
-    window.addEventListener('mouseup', () => {{ if (isDragging) {{ isDragging = false; inertiaLoop(); }} }});
-    
-    function inertiaLoop() {{ 
-        if (Math.abs(velocity) < 0.05) return; 
-        velocity *= 0.95; 
-        currentRotation += velocity; 
+    // Souris
+    scene.addEventListener('mousedown', (e) => {{ isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; document.body.style.cursor = "grabbing"; }});
+    window.addEventListener('mousemove', (e) => {{ 
+        if (!isDragging) return; 
+        const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; 
+        // Note: Doubles accolades pour ${{ }} dans f-string Python pour générer JS template literal
         carousel.style.transform = `rotateY(${{currentRotation}}deg)`; 
-        animationId = requestAnimationFrame(inertiaLoop); 
+        lastX = x; 
+    }});
+    window.addEventListener('mouseup', () => {{ isDragging = false; document.body.style.cursor = "grab"; }});
+
+    // Tactile
+    scene.addEventListener('touchstart', (e) => {{ isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; velocity = 0; }});
+    window.addEventListener('touchmove', (e) => {{ 
+        if (!isDragging) return; 
+        const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; 
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`; 
+        lastX = x; 
+    }});
+    window.addEventListener('touchend', () => {{ isDragging = false; }});
+
+    // Boucle d'animation (Inertie + Auto-rotation)
+    function animate() {{
+        requestAnimationFrame(animate);
+
+        if (!isDragging) {{
+            // Frottement
+            velocity *= 0.95;
+            // On ajoute la vélocité (élan) ET la vitesse auto
+            currentRotation += velocity + autoSpeed;
+            
+            carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+        }}
     }}
-    
-    window.addEventListener('touchstart', (e) => {{ isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; if (animationId) cancelAnimationFrame(animationId); }});
-    window.addEventListener('touchmove', (e) => {{ if (!isDragging) return; const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
-    window.addEventListener('touchend', () => {{ isDragging = false; inertiaLoop(); }});
+    animate();
 </script>
 </body>
 </html>
