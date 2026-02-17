@@ -228,6 +228,7 @@ carousel_html = f"""
         background: {marble_css}; 
         background-size: cover;
         background-position: center;
+        filter: brightness(0.6);
         display: flex; justify-content: center; align-items: center;
         transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
         border: 1px solid #888;
@@ -239,7 +240,7 @@ carousel_html = f"""
         background: {marble_css};
         background-size: cover;
         background-position: center;
-        filter: brightness(0.6); 
+        filter: brightness(0.8); 
         left: calc((var(--w) - var(--d)) / 2);
         transform: translateX(calc(var(--w) / 2)) rotateY(90deg);
         border: 1px solid #555;
@@ -295,7 +296,7 @@ carousel_html = f"""
     .command-content p {{
         margin: 0;
         font-family: 'Great Vibes', cursive; 
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         color: #5c4033; /* Marron foncé/Bronze pour contraster avec l'or */
         text-shadow: 0px 1px 0px rgba(255,255,255,0.6);
     }}
