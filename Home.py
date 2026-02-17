@@ -102,49 +102,54 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. GÉNÉRATION HTML (Style "Table de Commandement") ---
+# --- 5. GÉNÉRATION HTML (TECHNIQUE DU DOUBLE FANTÔME) ---
 html_cards = ""
 angle = 360 / len(projects)
 tz = 450 
 
 for i, project in enumerate(projects):
-    # Plus besoin de l'image du projet, on garde juste le marbre
-    
+    # On définit le contenu interne d'une carte (les faces)
+    # pour pouvoir l'injecter deux fois (la carte réelle + son reflet)
+    card_inner_html = f"""
+        <div class="face front">
+            <a href="{project['link']}" target="_blank" draggable="false">
+                <div class="command-content">
+                    <div class="icon"></div> <h3>{project['title']}</h3>
+                    <div class="separator"></div>
+                    <p>{project['desc']}</p>
+                </div>
+            </a>
+        </div>
+        <div class="face back">
+        </div>
+        <div class="face right"></div>
+        <div class="face left"></div>
+    """
+
     html_cards += f"""
     <div class="card-container" style="--angle: {i * angle}deg; --tz: {tz}px;">
-        <div class="card">
-            <div class="face front">
-                <a href="{project['link']}" target="_blank" draggable="false">
-                    <div class="command-content">
-                        <div class="icon"></div> <h3>{project['title']}</h3>
-                        <div class="separator"></div>
-                        <p>{project['desc']}</p>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="face back">
-            </div>
-
-            <div class="face right"></div>
-            <div class="face left"></div>
+        <div class="card main-card">
+            {card_inner_html}
+        </div>
+        
+        <div class="card reflection-card">
+            {card_inner_html}
         </div>
     </div>
     """
 
-# --- 5. CSS FINAL ---
+# --- 6. CSS FINAL ---
 carousel_html = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <style>
-    /* 1. IMPORT DE LA POLICE CURSIVE DE LUXE */
     @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
     :root {{
-        --w: 260px;   /* Largeur */
-        --h: 360px;   /* Hauteur */
-        --d: 20px;    /* ÉPAISSEUR */
+        --w: 260px;
+        --h: 360px;
+        --d: 20px; /* Épaisseur maintenue */
     }}
 
     body {{ 
@@ -152,16 +157,11 @@ carousel_html = f"""
         background: {bg_css} no-repeat center center fixed; 
         background-size: cover;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-
-        /* --- 1. INTERDICTION DE SÉLECTIONNER LE TEXTE --- */
-        -webkit-user-select: none; /* Safari / Chrome */
-        -moz-user-select: none;    /* Firefox */
-        -ms-user-select: none;     /* IE / Edge */
-        user-select: none;         /* Standard */
-        
-        /* --- 2. CURSEUR MAIN OUVERTE PARTOUT --- */
+        -webkit-user-select: none; user-select: none;
         cursor: grab;
     }}
+
+    body:active {{ cursor: grabbing; }}
 
     .scene {{
         width: 100%; height: 100vh;
@@ -181,6 +181,7 @@ carousel_html = f"""
         transform-style: preserve-3d;
         transform: rotateY(var(--angle)) translateZ(var(--tz));
         animation: float 6s ease-in-out infinite;
+        /* PAS DE REFLECT ICI, C'EST GÉRÉ PAR LA CLASSE .reflection-card */
     }}
     
     .card-container:nth-child(1) {{ animation-delay: 0s; }}
@@ -198,9 +199,32 @@ carousel_html = f"""
     /* --- STRUCTURE 3D --- */
     .card {{
         width: 100%; height: 100%;
-        position: relative; 
+        position: absolute; /* Important pour superposer reflet et carte */
         transform-style: preserve-3d;
-        transition: transform 0.3s;
+        /* Pas de transition ici, c'est le container qui bouge */
+    }}
+
+    /* --- GESTION DU REFLET (LE SECRET) --- */
+    .main-card {{
+        /* La carte principale est en position normale */
+        z-index: 2;
+    }}
+
+    .reflection-card {{
+        /* On inverse la carte verticalement et on la descend */
+        /* translateY(100%) = descend de sa propre hauteur */
+        /* + 10px = le petit espace entre la carte et le sol */
+        /* scaleY(-1) = effet miroir */
+        transform: translateY(calc(100% + 10px)) scaleY(-1);
+        
+        opacity: 0.4; /* Transparence du reflet */
+        pointer-events: none; /* On ne peut pas cliquer sur le reflet */
+        
+        /* Masque pour effacer le reflet progressivement vers le bas */
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+        
+        z-index: 1;
     }}
 
     .face {{
@@ -209,25 +233,20 @@ carousel_html = f"""
         box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
     }}
 
-    /* 1. DEVANT (TABLE DE COMMANDEMENT) */
+    /* 1. DEVANT */
     .front {{
         width: var(--w); height: var(--h);
-        
-        background: {marble_css};
-        background-size: cover;
-        background-position: center;
-        
+        background: {marble_css}; background-size: cover; background-position: center;
         display: flex; justify-content: center; align-items: center;
         transform: translateZ(calc(var(--d) / 2)); 
+ 
     }}
-    
+
 
     /* 2. DERRIÈRE */
     .back {{
         width: var(--w); height: var(--h);
-        background: {marble_css}; 
-        background-size: cover;
-        background-position: center;
+        background: {marble_css}; background-size: cover; background-position: center;
         filter: brightness(0.6);
         display: flex; justify-content: center; align-items: center;
         transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
@@ -237,9 +256,7 @@ carousel_html = f"""
     /* 3. DROITE */
     .right {{
         width: var(--d); height: var(--h);
-        background: {marble_css};
-        background-size: cover;
-        background-position: center;
+        background: {marble_css}; background-size: cover; background-position: center;
         filter: brightness(0.8); 
         left: calc((var(--w) - var(--d)) / 2);
         transform: translateX(calc(var(--w) / 2)) rotateY(90deg);
@@ -249,64 +266,25 @@ carousel_html = f"""
     /* 4. GAUCHE */
     .left {{
         width: var(--d); height: var(--h);
-        background: {marble_css};
-        background-size: cover;
-        background-position: center;
+        background: {marble_css}; background-size: cover; background-position: center;
         filter: brightness(0.6); 
         left: calc((var(--w) - var(--d)) / 2);
         transform: translateX(calc(var(--w) / -2)) rotateY(-90deg);
         border: 1px solid #555;
     }}
 
-    /* --- CONTENU TEXTE DU FRONT (MODIFIÉ) --- */
-    .command-content {{
-        text-align: center;
-        padding: 15px;
-        width: 100%;
-    }}
-
-    /* L'icône (éclair, etc.) */
-    .icon {{
-        font-size: 1.5rem;
-        margin-bottom: 5px;
-        color: #B8860B; /* DarkGoldenRod */
-        text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
-    }}
-
-    /* TITRE EN CURSIVE DORÉE */
-    .command-content h3 {{
-        margin: 0;
-        font-family: 'Great Vibes', cursive; /* Police Calligraphie */
-        font-size: 2.8rem; /* Plus grand car la police est fine */
-        line-height: 1.1;
-        color: #B8860B; /* Couleur Or foncé pour lisibilité */
-        text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8), 0px 0px 1px rgba(0,0,0,0.2);
-        font-weight: normal;
-    }}
-
-    .separator {{
-        width: 50px;
-        height: 1px;
-        background: #B8860B;
-        margin: 10px auto;
-        opacity: 0.6;
-    }}
-
-    /* DESCRIPTION EN CURSIVE (Optionnel, ou police normale serif) */
-    .command-content p {{
-        margin: 0;
-        font-family: 'Great Vibes', cursive; 
-        font-size: 1.6rem;
-        color: #5c4033; /* Marron foncé/Bronze pour contraster avec l'or */
-        text-shadow: 0px 1px 0px rgba(255,255,255,0.6);
-    }}
-
-    /* Back Design */
+    /* --- CONTENU --- */
+    .command-content {{ text-align: center; padding: 15px; width: 100%; }}
+    .icon {{ font-size: 1.5rem; margin-bottom: 5px; color: #B8860B; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }}
+    .command-content h3 {{ margin: 0; font-family: 'Great Vibes', cursive; font-size: 2.8rem; line-height: 1.1; color: #B8860B; text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8), 0px 0px 1px rgba(0,0,0,0.2); font-weight: normal; }}
+    .separator {{ width: 50px; height: 1px; background: #B8860B; margin: 10px auto; opacity: 0.6; }}
+    .command-content p {{ margin: 0; font-family: 'Great Vibes', cursive; font-size: 1.6rem; color: #5c4033; text-shadow: 0px 1px 0px rgba(255,255,255,0.6); }}
+    
     .back-design {{ text-align: center; opacity: 0.6; }}
     .back-design .logo {{ font-size: 3rem; color: #333; }}
     .back-design .text {{ font-size: 0.6rem; letter-spacing: 3px; color: #333; font-weight: bold; }}
-
-    a {{ text-decoration: none; color: inherit; display: block; height: 100%; display: flex; align-items: center; justify-content: center; }}
+    
+    a {{ text-decoration: none; color: inherit; display: block; height: 100%; display: flex; align-items: center; justify-content: center; -webkit-user-drag: none; }}
 </style>
 </head>
 <body>
@@ -320,7 +298,7 @@ carousel_html = f"""
     const scene = document.querySelector('.scene');
     let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0, animationId = null;
 
-    scene.addEventListener('mousedown', (e) => {{ isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; if (animationId) cancelAnimationFrame(animationId); }});
+    window.addEventListener('mousedown', (e) => {{ isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; if (animationId) cancelAnimationFrame(animationId); }});
     window.addEventListener('mousemove', (e) => {{ if (!isDragging) return; const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
     window.addEventListener('mouseup', () => {{ if (isDragging) {{ isDragging = false; inertiaLoop(); }} }});
     
@@ -332,7 +310,7 @@ carousel_html = f"""
         animationId = requestAnimationFrame(inertiaLoop); 
     }}
     
-    scene.addEventListener('touchstart', (e) => {{ isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; if (animationId) cancelAnimationFrame(animationId); }});
+    window.addEventListener('touchstart', (e) => {{ isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; if (animationId) cancelAnimationFrame(animationId); }});
     window.addEventListener('touchmove', (e) => {{ if (!isDragging) return; const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
     window.addEventListener('touchend', () => {{ isDragging = false; inertiaLoop(); }});
 </script>
