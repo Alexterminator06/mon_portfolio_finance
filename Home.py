@@ -8,13 +8,25 @@ st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="�
 
 # --- 2. FONCTIONS ROBUSTES ---
 def get_base64_image(image_filename):
-    possible_paths = [os.path.join("assets", image_filename), image_filename]
+    # Liste des chemins possibles pour Streamlit Cloud
+    possible_paths = [
+        os.path.join("assets", image_filename), # Dans le dossier assets
+        image_filename,                         # A la racine
+        os.path.join(".", image_filename)       # Explicite racine
+    ]
+    
     found_path = None
     for path in possible_paths:
         if os.path.exists(path):
             found_path = path
             break
-    if not found_path: return None
+            
+    if not found_path:
+        # Si on ne trouve pas l'image, on retourne None
+        # Sur Streamlit Cloud, vérifiez la casse (Majuscules/Minuscules) !
+        print(f"⚠️ Image non trouvée : {image_filename}")
+        return None
+    
     try:
         _, ext = os.path.splitext(found_path)
         ext = ext.replace('.', '').lower()
@@ -22,7 +34,8 @@ def get_base64_image(image_filename):
         with open(found_path, "rb") as img_file:
             encoded = base64.b64encode(img_file.read()).decode()
             return f"data:image/{ext};base64,{encoded}"
-    except Exception:
+    except Exception as e:
+        print(f"Erreur encodage : {e}")
         return None
 
 # --- 3. CHARGEMENT DES ASSETS ---
