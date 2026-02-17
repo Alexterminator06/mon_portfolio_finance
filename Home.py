@@ -170,7 +170,10 @@ carousel_html = f"""
     /* --- LAYERS BACKGROUND --- */
     .bg-layer {{
         position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-        background-size: cover; background-position: center; background-repeat: no-repeat;
+        background-repeat: no-repeat !important; /* Empêche la répétition */
+        background-size: cover !important;       /* Force l'image à couvrir l'écran */
+        background-position: center center !important; /* Centre l'image */
+        z-index: 0;
         transition: opacity 0.1s linear;
     }}
     #bg1 {{ background: {css_bg1}; z-index: 1; opacity: 1; }}
