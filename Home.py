@@ -188,12 +188,19 @@ carousel_html = f"""
     }}
 
     /* --- CONTENEUR CARROUSEL --- */
+    /* --- CARROUSEL WRAPPER (MOBILE FIX) --- */
     .scene-wrapper {{
         position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-        opacity: 0; z-index: 20; pointer-events: none; 
-        transition: opacity 0.5s ease;
+        opacity: 0; z-index: 20; pointer-events: none; transition: opacity 0.5s ease;
     }}
-    .scene-wrapper.active {{ pointer-events: auto; cursor: grab; }}
+    
+    .scene-wrapper.active {{ 
+        pointer-events: auto; 
+        cursor: grab;
+        
+        /* LA CLEF POUR MOBILE : Empêche le navigateur de scroller quand on touche cette zone */
+        touch-action: none; 
+    }}
     .scene-wrapper.active:active {{ cursor: grabbing; }}
 
 
@@ -295,6 +302,39 @@ carousel_html = f"""
     .back-design .text {{ font-size: 0.6rem; letter-spacing: 3px; color: #333; font-weight: bold; }}
     
     a {{ text-decoration: none; color: inherit; display: block; height: 100%; display: flex; align-items: center; justify-content: center; -webkit-user-drag: none; }}
+
+/* ========================================= */
+    /* ===  MEDIA QUERIES (MODE MOBILE)      === */
+    /* ========================================= */
+    @media only screen and (max-width: 768px) {{
+        
+        /* 1. On réduit la taille des titres */
+        .intro-text h1 {{
+            font-size: 1.8rem; /* Beaucoup plus petit */
+            letter-spacing: 2px;
+        }}
+        .intro-text h2 {{
+            font-size: 2.5rem; /* Adapté à l'écran vertical */
+        }}
+
+        /* 2. On réduit la taille TOTALE de la scène 3D */
+        /* C'est l'astuce magique : on zoome arrière de 45% */
+        .scene {{
+            transform: scale(0.45); 
+        }}
+
+        /* 3. On ajuste la hauteur de scroll pour mobile */
+        body {{
+            height: 350vh;
+        }}
+        
+        /* 4. On remonte un peu le carrousel car le scale le fait descendre visuellement */
+        .carousel {{
+            top: -50px;
+        }}
+    }}
+
+    
 </style>
 </head>
 <body>
