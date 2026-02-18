@@ -8,40 +8,25 @@ import json
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
 # --- 2. FONCTIONS ROBUSTES ---
-def get_base64_image(image_filename,filetype="image"):
-    # Liste des chemins possibles pour Streamlit Cloud
-    possible_paths = [
-        os.path.join("assets", image_filename), # Dans le dossier assets
-        image_filename,                         # A la racine
-        os.path.join(".", image_filename)       # Explicite racine
-    ]
-    
+def get_base64_image(filename, filetype="image"):
+    possible_paths = [os.path.join("assets", filename), filename, os.path.join(".", filename)]
     found_path = None
     for path in possible_paths:
         if os.path.exists(path):
             found_path = path
             break
-            
-    if not found_path:
-        # Si on ne trouve pas l'image, on retourne None
-        # Sur Streamlit Cloud, vérifiez la casse (Majuscules/Minuscules) !
-        print(f"⚠️ Image non trouvée : {image_filename}")
-        return None
-    
+    if not found_path: return None
     try:
-        with open(found_path, "rb") as img_file:
-            encoded = base64.b64encode(img_file.read()).decode()
-            
+        with open(found_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
         if filetype == "image":
-            # Détection simple de l'extension
             ext = os.path.splitext(found_path)[1].lower().replace('.', '')
             if ext == 'jpg': ext = 'jpeg'
             return f"data:image/{ext};base64,{encoded}"
         elif filetype == "pdf":
-            return f"data:application/pdf;base64,{encoded}"
-    
-    except Exception as e:
-        print(f"Erreur encodage : {e}")
+            # MODIFICATION : Retourne le code brut uniquement
+            return encoded
+    except Exception:
         return None
 
 # --- 3. CHARGEMENT DES ASSETS ---
@@ -507,49 +492,59 @@ carousel_html = f"""
             <p class="modal-desc" id="m-desc">Desc</p>
             <div id="m-tech"></div>
             <div class="modal-buttons">
-                <a href="#" target="_blank" class="btn btn-outline" id="m-code">Voir Code</a>
-                <div class="btn btn-gold" id="m-report" onclick="openPdfReader()">📄 Lire le Rapport</div>
+                <a href="#" target="_blank" class="btn btn-outline" id="m-code">Voir le Code</a>
+                
+                <a href="#" target="_blank" class="btn btn-gold" id="m-report">
+                    📄 Lire le Rapport
+                </a>
             </div>
-        </div>
-    </div>
-
-    <div class="pdf-overlay" id="pdf-overlay">
-        <div class="pdf-header">
-            <div class="close-pdf" onclick="closePdfReader()">Fermer ✕</div>
-        </div>
-        <div class="pdf-container">
-            <iframe id="pdf-frame" class="pdf-frame" src=""></iframe>
         </div>
     </div>
 
 <script>
     const projectsData = {projects_json};
-    const sceneWrapper = document.getElementById('scene-wrapper');
-    const intro1 = document.getElementById('intro1'); const intro2 = document.getElementById('intro2');
-    const bg1 = document.getElementById('bg1'); const bg2 = document.getElementById('bg2'); const bg3 = document.getElementById('bg3');
-    const scene3d = document.getElementById('scene-3d');
+
     const carousel = document.getElementById('carousel');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const mTitle = document.getElementById('m-title'); const mDesc = document.getElementById('m-desc');
-    const mTech = document.getElementById('m-tech'); const mCode = document.getElementById('m-code'); const mReport = document.getElementById('m-report');
-    const pdfOverlay = document.getElementById('pdf-overlay');
-    const pdfFrame = document.getElementById('pdf-frame');
+    const sceneWrapper = document.getElementById('scene-wrapper');
+    const bg1 = document.getElementById('bg1');
+    const bg2 = document.getElementById('bg2');
+    const bg3 = document.getElementById('bg3');
+    const intro1 = document.getElementById('intro1');
+    const intro2 = document.getElementById('intro2');
     
-    let currentPdfBase64 = "";
+    // Elements Modale
+    const modalOverlay = document.getElementById('modal-overlay');
+    const mTitle = document.getElementById('m-title');
+    const mDesc = document.getElementById('m-desc');
+    const mTech = document.getElementById('m-tech');
+    const mCode = document.getElementById('m-code');
+    
+    // Le bouton du rapport
+    const mReport = document.getElementById('m-report');
+    
+    const scene3d = document.getElementById('scene-3d');
 
     function openModal(index) {{
         const p = projectsData[index];
         mTitle.innerText = p.title;
         mDesc.innerText = p.desc_long;
+        
         mTech.innerHTML = "";
-        p.tech.forEach(t => mTech.innerHTML += `<span class="tech-tag">${{t}}</span>`);
+        p.tech.forEach(t => {{
+            mTech.innerHTML += `<span class="tech-tag">${{t}}</span>`;
+        }});
+        
         mCode.href = p.link_github;
-
-        if (p.link_report && p.link_report !== "") {{
-            currentPdfBase64 = p.link_report; // Store base64 data
-            mReport.style.display = "block";
+        
+        // --- GESTION DU RAPPORT PDF ---
+        if (p.link_report && p.link_report !== "#") {{
+            mReport.href = p.link_report;
+            mReport.style.display = "inline-block"; // Afficher si lien existe
+            
+            // Astuce : Donner le nom du fichier pour le téléchargement
+            mReport.download = p.pdf_filename || "rapport.pdf";
         }} else {{
-            mReport.style.display = "none";
+            mReport.style.display = "none"; // Cacher le bouton si pas de PDF
         }}
 
         modalOverlay.classList.add('open');
@@ -560,60 +555,83 @@ carousel_html = f"""
         modalOverlay.classList.remove('open');
         scene3d.style.filter = "none";
     }}
-    modalOverlay.addEventListener('click', (e) => {{ if (e.target === modalOverlay) closeModal(); }});
 
-    // --- JS MAGIQUE POUR CONTOURNER EDGE ---
-    function openPdfReader() {{
-        if(!currentPdfBase64) return;
-        
-        try {{
-            // On enlève le header "data:application/pdf;base64,"
-            const base64Data = currentPdfBase64.split(',')[1];
-            
-            // Conversion Base64 -> Binaire -> Blob
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {{
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }}
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], {{type: 'application/pdf'}});
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Injection
-            pdfFrame.src = blobUrl;
-            pdfOverlay.classList.add('open');
-            
-        }} catch(e) {{
-            console.error("Erreur conversion PDF:", e);
-            alert("Erreur lors de l'ouverture du PDF.");
-        }}
-    }}
-
-    function closePdfReader() {{
-        pdfOverlay.classList.remove('open');
-        pdfFrame.src = ""; // Vide la mémoire
-    }}
-
-    // --- ANIMATION SCROLL (Doubles accolades {{ }}) ---
-    let autoSpeed = -0.025; let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0;
-    window.addEventListener('scroll', () => {{
-        const scrollY = window.scrollY; const h = window.innerHeight;
-        let op1 = 1 - (scrollY / (h * 0.6)); intro1.style.opacity = Math.max(0, op1); intro1.style.transform = `translate(-50%, -50%) scale(${{1 - scrollY * 0.0002}})`;
-        let op2 = 0; if (scrollY > h * 0.8 && scrollY < h * 2.2) {{ if (scrollY < h * 1.2) op2 = (scrollY - h * 0.8) / (h * 0.4); else if (scrollY < h * 1.8) op2 = 1; else op2 = 1 - (scrollY - h * 1.8) / (h * 0.4); }} intro2.style.opacity = Math.max(0, op2); intro2.style.transform = `translate(-50%, -50%) scale(${{0.8 + (scrollY - h) * 0.0005}})`;
-        let bg2Op = (scrollY > h * 0.5) ? (scrollY - h * 0.5) / (h * 0.7) : 0; bg2.style.opacity = Math.min(1, Math.max(0, bg2Op));
-        let bg3Op = (scrollY > h * 1.8) ? (scrollY - h * 1.8) / (h * 0.7) : 0; bg3.style.opacity = Math.min(1, Math.max(0, bg3Op));
-        let sceneOp = (scrollY > h * 2.0) ? (scrollY - h * 2.0) / (h * 0.5) : 0; sceneWrapper.style.opacity = Math.min(1, Math.max(0, sceneOp));
-        if (sceneOp > 0.9) sceneWrapper.classList.add('active'); else sceneWrapper.classList.remove('active');
+    modalOverlay.addEventListener('click', (e) => {{
+        if (e.target === modalOverlay) closeModal();
     }});
 
-    window.addEventListener('touchstart', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!sceneWrapper.classList.contains('active')) return; isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; velocity = 0; }}, {{ passive: false }});
-    window.addEventListener('touchmove', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!isDragging) return; if(e.cancelable) e.preventDefault(); const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }}, {{ passive: false }});
+    let autoSpeed = -0.025; 
+    let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0;
+
+    window.addEventListener('scroll', () => {{
+        const scrollY = window.scrollY;
+        const h = window.innerHeight;
+
+        let op1 = 1 - (scrollY / (h * 0.6));
+        intro1.style.opacity = Math.max(0, op1);
+        intro1.style.transform = `translate(-50%, -50%) scale(${{1 - scrollY * 0.0002}})`;
+
+        let op2 = 0;
+        if (scrollY > h * 0.8 && scrollY < h * 2.2) {{
+            if (scrollY < h * 1.2) op2 = (scrollY - h * 0.8) / (h * 0.4);
+            else if (scrollY < h * 1.8) op2 = 1;
+            else op2 = 1 - (scrollY - h * 1.8) / (h * 0.4);
+        }}
+        intro2.style.opacity = Math.max(0, op2);
+        intro2.style.transform = `translate(-50%, -50%) scale(${{0.8 + (scrollY - h) * 0.0005}})`;
+
+        let bg2Op = (scrollY > h * 0.5) ? (scrollY - h * 0.5) / (h * 0.7) : 0;
+        bg2.style.opacity = Math.min(1, Math.max(0, bg2Op));
+
+        let bg3Op = (scrollY > h * 1.8) ? (scrollY - h * 1.8) / (h * 0.7) : 0;
+        bg3.style.opacity = Math.min(1, Math.max(0, bg3Op));
+
+        let sceneOp = (scrollY > h * 2.0) ? (scrollY - h * 2.0) / (h * 0.5) : 0;
+        sceneWrapper.style.opacity = Math.min(1, Math.max(0, sceneOp));
+
+        if (sceneOp > 0.9) sceneWrapper.classList.add('active');
+        else sceneWrapper.classList.remove('active');
+    }});
+
+    // Mobile Logic
+    window.addEventListener('touchstart', (e) => {{ 
+        if (modalOverlay.classList.contains('open')) return;
+        if (!sceneWrapper.classList.contains('active')) return;
+        isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; velocity = 0; 
+    }}, {{ passive: false }});
+
+    window.addEventListener('touchmove', (e) => {{ 
+        if (modalOverlay.classList.contains('open')) return;
+        if (!isDragging) return; 
+        if(e.cancelable) e.preventDefault(); 
+        const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; 
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; 
+    }}, {{ passive: false }});
+    
     window.addEventListener('touchend', () => {{ isDragging = false; }});
-    window.addEventListener('mousedown', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!sceneWrapper.classList.contains('active')) return; isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; document.body.style.cursor = "grabbing"; }});
-    window.addEventListener('mousemove', (e) => {{ if (!isDragging) return; const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
+
+    // Desktop Logic
+    window.addEventListener('mousedown', (e) => {{ 
+        if (modalOverlay.classList.contains('open')) return;
+        if (!sceneWrapper.classList.contains('active')) return;
+        isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; 
+        document.body.style.cursor = "grabbing"; 
+    }});
+    window.addEventListener('mousemove', (e) => {{ 
+        if (!isDragging) return; 
+        const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; 
+        carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; 
+    }});
     window.addEventListener('mouseup', () => {{ isDragging = false; if (sceneWrapper.classList.contains('active')) document.body.style.cursor = "grab"; }});
-    function animate() {{ requestAnimationFrame(animate); if (!isDragging && !modalOverlay.classList.contains('open') && !pdfOverlay.classList.contains('open')) {{ velocity *= 0.95; currentRotation += velocity + autoSpeed; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; }} }}
+    
+    function animate() {{
+        requestAnimationFrame(animate);
+        if (!isDragging && !modalOverlay.classList.contains('open')) {{
+            velocity *= 0.95;
+            currentRotation += velocity + autoSpeed;
+            carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+        }}
+    }}
     animate();
     window.dispatchEvent(new Event('scroll'));
 </script>
