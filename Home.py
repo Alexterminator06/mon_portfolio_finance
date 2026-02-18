@@ -103,7 +103,7 @@ projects = [
     {
         "id": 2,
         "title": "Financial Dashboard",
-        "desc_short": "Single Asset / Portfolio",
+        "desc_short": "Single Asset / Portfolio Not ready yet",
         "desc_long": "Not ready yet",
 
 
@@ -112,7 +112,7 @@ projects = [
     {
         "id": 3,
         "title": "Trading Bot",
-        "desc_short": "Trading Automatique",
+        "desc_short": "Trading Automatique Not ready yet",
         "desc_long": "Not ready yet",
 
 
@@ -122,7 +122,7 @@ projects = [
         "id": 4,
         "title": "Bank Solvency",
         "desc_short": "Indice Computing",
-        "desc_long": "Not ready yet",
+        "desc_long": "Not ready yet Not ready yet",
 
 
     },
@@ -130,7 +130,7 @@ projects = [
         "id": 5,
         "title": "Commoditiy Trading",
         "desc_short": "Brent Crude",
-        "desc_long": "Not ready yet",
+        "desc_long": "Not ready yet Not ready yet",
 
     }
 ]
