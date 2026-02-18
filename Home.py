@@ -2,12 +2,13 @@ import streamlit as st
 import streamlit.components.v1 as components
 import base64
 import os
+import json
 
 # --- 1. CONFIGURATION ---
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
 # --- 2. FONCTIONS ROBUSTES ---
-def get_base64_image(image_filename):
+def get_base64_image(image_filename,filetype="image"):
     # Liste des chemins possibles pour Streamlit Cloud
     possible_paths = [
         os.path.join("assets", image_filename), # Dans le dossier assets
@@ -28,12 +29,17 @@ def get_base64_image(image_filename):
         return None
     
     try:
-        _, ext = os.path.splitext(found_path)
-        ext = ext.replace('.', '').lower()
-        if ext == 'jpg': ext = 'jpeg'
         with open(found_path, "rb") as img_file:
             encoded = base64.b64encode(img_file.read()).decode()
+            
+        if filetype == "image":
+            # Détection simple de l'extension
+            ext = os.path.splitext(found_path)[1].lower().replace('.', '')
+            if ext == 'jpg': ext = 'jpeg'
             return f"data:image/{ext};base64,{encoded}"
+        elif filetype == "pdf":
+            return f"data:application/pdf;base64,{encoded}"
+    
     except Exception as e:
         print(f"Erreur encodage : {e}")
         return None
@@ -57,42 +63,76 @@ css_marble = f"url('{b64_marble}')" if b64_marble else "#cccccc"
 
 projects = [
     {
+        "id": 0,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
     },
     {
+       "id": 1,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
     },
     {
+        "id": 2,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
+
     },
     {
+        "id": 3,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
     },
      {
+        "id": 4,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
     },
     {
+        "id": 5,
         "title": "Bot Trading",
-        "image": "projet_bourse.jpg",
-        "link": "https://bitcoin-trading-bot.streamlit.app/",
-        "desc": "Trading Automatique et Signaux"
+        "desc_short": "Trading Automatique",
+        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
+        "tech": ["Python", "Binance API", "Pandas", "AWS"],
+        "link_github": "https://github.com/ton-profil/bot",
+        "pdf_filename": "A4_Rapport_Machine_Learning.pdf"
     }
 ]
+
+projects_processed = []
+for p in projects:
+    # On convertit le fichier PDF en lien base64 exploitable par le navigateur
+    pdf_b64 = get_base64_image(p.get("pdf_filename"), "pdf")
+    
+    # Si pas de PDF trouvé, on met un lien vide ou un lien par défaut
+    if not pdf_b64:
+        pdf_b64 = "#" 
+        
+    new_p = p.copy()
+    new_p["link_report"] = pdf_b64
+    projects_processed.append(new_p)
+
+projects_json = json.dumps(projects_processed)
 
 ## --- 4. CSS GLOBAL STREAMLIT ---
 st.markdown("""
@@ -108,21 +148,20 @@ st.markdown("""
 
 # --- 5. GÉNÉRATION HTML (CARTE REFERENCE) ---
 html_cards = ""
-angle = 360 / len(projects)
+angle = 360 / len(projects_processed)
 tz = 450 
 
-for i, project in enumerate(projects):
+for i, project in enumerate(projects_processed):
     # Contenu interne (Identique à votre référence)
     card_inner = f"""
-        <div class="face front">
-            <a href="{project['link']}" target="_blank" draggable="false">
-                <div class="command-content">
-                    <div class="icon"></div> 
-                    <h3>{project['title']}</h3>
-                    <div class="separator"></div>
-                    <p>{project['desc']}</p>
-                </div>
-            </a>
+        <div class="face front" onclick="openModal({i})">
+            <div class="command-content">
+                <div class="icon"></div> 
+                <h3>{project['title']}</h3>
+                <div class="separator"></div>
+                <p>{project['desc_short']}</p>
+                <div class="click-instruction">(Cliquer pour détails)</div>
+            </div>
         </div>
         <div class="face back">
         </div>
@@ -319,6 +358,93 @@ carousel_html = f"""
     
     a {{ text-decoration: none; color: inherit; display: block; height: 100%; display: flex; align-items: center; justify-content: center; -webkit-user-drag: none; }}
 
+    /* ========================================= */
+    /* ===  MODALE DE LUXE (POP-UP)          === */
+    /* ========================================= */
+    .modal-overlay {{
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85); /* Fond noir très opaque */
+        backdrop-filter: blur(8px); /* Effet verre flouté */
+        z-index: 1000;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.4s ease;
+        display: flex; justify-content: center; align-items: center;
+    }}
+    
+    .modal-overlay.open {{ opacity: 1; pointer-events: auto; }}
+
+    .modal-card {{
+        width: 600px; max-width: 90%;
+        background: #0a0a0a;
+        border: 1px solid #D4AF37; /* Bordure Or */
+        box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        transform: translateY(50px);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }}
+
+    .modal-overlay.open .modal-card {{ transform: translateY(0); }}
+
+    .modal-title {{
+        font-family: 'Cinzel', serif; color: #D4AF37; font-size: 2rem; margin-bottom: 20px;
+        text-transform: uppercase; letter-spacing: 2px;
+        border-bottom: 1px solid #333; padding-bottom: 15px;
+    }}
+
+    .modal-desc {{
+        font-family: 'Helvetica Neue', sans-serif; color: #ddd; font-size: 1rem; line-height: 1.6;
+        margin-bottom: 30px; font-weight: 300;
+    }}
+
+    .tech-stack {{ margin-bottom: 30px; }}
+    .tech-tag {{
+        display: inline-block; padding: 5px 10px; margin: 3px;
+        border: 1px solid #555; color: #aaa; font-size: 0.8rem;
+        border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;
+    }}
+
+    .modal-buttons {{ display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }}
+
+    .btn {{
+        padding: 12px 25px; text-decoration: none; font-family: 'Cinzel', serif; font-weight: bold;
+        transition: all 0.3s ease; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+        font-size: 0.9rem;
+    }}
+
+    .btn-gold {{
+        background: #D4AF37; color: #000; border: 1px solid #D4AF37;
+    }}
+    .btn-gold:hover {{ background: #fff; border-color: #fff; }}
+
+    .btn-outline {{
+        background: transparent; color: #D4AF37; border: 1px solid #D4AF37;
+    }}
+    .btn-outline:hover {{ background: rgba(212, 175, 55, 0.1); }}
+
+    .close-modal {{
+        position: absolute; top: 15px; right: 20px;
+        color: #555; font-size: 2rem; cursor: pointer; transition: color 0.3s;
+    }}
+    .close-modal:hover {{ color: #D4AF37; }}
+
+    /* --- NOUVEAU : PDF OVERLAY (Plein écran) --- */
+    .pdf-overlay {{
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 2000; /* Au-dessus de tout */
+        display: none; flex-direction: column;
+    }}
+    .pdf-overlay.open {{ display: flex; }}
+    
+    .pdf-header {{
+        height: 50px; background: #111; display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; border-bottom: 1px solid #333;
+    }}
+    .close-pdf {{ color: #D4AF37; cursor: pointer; font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }}
+    
+    .pdf-container {{ flex: 1; width: 100%; height: 100%; background: #222; }}
+    iframe.pdf-frame {{ width: 100%; height: 100%; border: none; }}
+
 /* ========================================= */
     /* ===  MEDIA QUERIES (MODE MOBILE)      === */
     /* ========================================= */
@@ -374,81 +500,120 @@ carousel_html = f"""
             </div>
         </div>
     </div>
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-card">
+            <div class="close-modal" onclick="closeModal()">×</div>
+            <h2 class="modal-title" id="m-title">Titre</h2>
+            <p class="modal-desc" id="m-desc">Desc</p>
+            <div id="m-tech"></div>
+            <div class="modal-buttons">
+                <a href="#" target="_blank" class="btn btn-outline" id="m-code">Voir Code</a>
+                <div class="btn btn-gold" id="m-report" onclick="openPdfReader()">📄 Lire le Rapport</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-overlay" id="pdf-overlay">
+        <div class="pdf-header">
+            <div class="close-pdf" onclick="closePdfReader()">Fermer ✕</div>
+        </div>
+        <div class="pdf-container">
+            <iframe id="pdf-frame" class="pdf-frame" src=""></iframe>
+        </div>
+    </div>
 
 <script>
-    const carousel = document.getElementById('carousel');
+    const projectsData = {projects_json};
     const sceneWrapper = document.getElementById('scene-wrapper');
-    const bg1 = document.getElementById('bg1');
-    const bg2 = document.getElementById('bg2');
-    const bg3 = document.getElementById('bg3');
-    const intro1 = document.getElementById('intro1');
-    const intro2 = document.getElementById('intro2');
+    const intro1 = document.getElementById('intro1'); const intro2 = document.getElementById('intro2');
+    const bg1 = document.getElementById('bg1'); const bg2 = document.getElementById('bg2'); const bg3 = document.getElementById('bg3');
+    const scene3d = document.getElementById('scene-3d');
+    const carousel = document.getElementById('carousel');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const mTitle = document.getElementById('m-title'); const mDesc = document.getElementById('m-desc');
+    const mTech = document.getElementById('m-tech'); const mCode = document.getElementById('m-code'); const mReport = document.getElementById('m-report');
+    const pdfOverlay = document.getElementById('pdf-overlay');
+    const pdfFrame = document.getElementById('pdf-frame');
+    
+    let currentPdfBase64 = "";
 
-    let autoSpeed = -0.025; 
-    let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0;
+    function openModal(index) {{
+        const p = projectsData[index];
+        mTitle.innerText = p.title;
+        mDesc.innerText = p.desc_long;
+        mTech.innerHTML = "";
+        p.tech.forEach(t => mTech.innerHTML += `<span class="tech-tag">${{t}}</span>`);
+        mCode.href = p.link_github;
 
-    // --- LOGIQUE SCROLL ---
-    window.addEventListener('scroll', () => {{
-        const scrollY = window.scrollY;
-        const h = window.innerHeight;
-
-        // Intro 1
-        let op1 = 1 - (scrollY / (h * 0.6));
-        if (scrollY < h * 0.2) op1 = scrollY / (h * 0.2);
-        else if (scrollY < h * 0.8) op1 = 1;
-        else op1 = 1 - (scrollY - h * 0.8) / (h * 0.2);
-        intro1.style.opacity = Math.max(0, op1);
-        intro1.style.transform = `translate(-50%, -50%) scale(${{1 + scrollY * 0.0005}})`;
-
-        // Intro 2
-        let op2 = 0;
-        if (scrollY > h * 0.8 && scrollY < h * 2.2) {{
-            if (scrollY < h * 1.2) op2 = (scrollY - h * 0.8) / (h * 0.4);
-            else if (scrollY < h * 1.8) op2 = 1;
-            else op2 = 1 - (scrollY - h * 1.8) / (h * 0.4);
+        if (p.link_report && p.link_report !== "") {{
+            currentPdfBase64 = p.link_report; // Store base64 data
+            mReport.style.display = "block";
+        }} else {{
+            mReport.style.display = "none";
         }}
-        intro2.style.opacity = Math.max(0, op2);
-        intro2.style.transform = `translate(-50%, -50%) scale(${{0.8 + (scrollY - h) * 0.0005}})`;
 
-        // Backgrounds Cross-fade
-        let bg2Op = (scrollY > h * 0.5) ? (scrollY - h * 0.5) / (h * 0.7) : 0;
-        bg2.style.opacity = Math.min(1, Math.max(0, bg2Op));
+        modalOverlay.classList.add('open');
+        scene3d.style.filter = "blur(10px) brightness(0.5)";
+    }}
 
-        let bg3Op = (scrollY > h * 1.8) ? (scrollY - h * 1.8) / (h * 0.7) : 0;
-        bg3.style.opacity = Math.min(1, Math.max(0, bg3Op));
+    function closeModal() {{
+        modalOverlay.classList.remove('open');
+        scene3d.style.filter = "none";
+    }}
+    modalOverlay.addEventListener('click', (e) => {{ if (e.target === modalOverlay) closeModal(); }});
 
-        // Carrousel Apparition
-        let sceneOp = (scrollY > h * 2.0) ? (scrollY - h * 2.0) / (h * 0.5) : 0;
-        sceneWrapper.style.opacity = Math.min(1, Math.max(0, sceneOp));
-
-        if (sceneOp > 0.9) sceneWrapper.classList.add('active');
-        else sceneWrapper.classList.remove('active');
-    }});
-
-    // --- INTERACTION ---
-    window.addEventListener('mousedown', (e) => {{ 
-        if (!sceneWrapper.classList.contains('active')) return;
-        isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; 
-        document.body.style.cursor = "grabbing"; 
-    }});
-    window.addEventListener('mousemove', (e) => {{ 
-        if (!isDragging) return; 
-        const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; 
-        carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; 
-    }});
-    window.addEventListener('mouseup', () => {{ isDragging = false; if (sceneWrapper.classList.contains('active')) document.body.style.cursor = "grab"; }});
-    window.addEventListener('touchstart', (e) => {{ if (!sceneWrapper.classList.contains('active')) return; isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; velocity = 0; }});
-    window.addEventListener('touchmove', (e) => {{ if (!isDragging) return; const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
-    window.addEventListener('touchend', () => {{ isDragging = false; }});
-
-    function animate() {{
-        requestAnimationFrame(animate);
-        if (!isDragging) {{
-            velocity *= 0.95;
-            currentRotation += velocity + autoSpeed;
-            carousel.style.transform = `rotateY(${{currentRotation}}deg)`;
+    // --- JS MAGIQUE POUR CONTOURNER EDGE ---
+    function openPdfReader() {{
+        if(!currentPdfBase64) return;
+        
+        try {{
+            // On enlève le header "data:application/pdf;base64,"
+            const base64Data = currentPdfBase64.split(',')[1];
+            
+            // Conversion Base64 -> Binaire -> Blob
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {{
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }}
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], {{type: 'application/pdf'}});
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Injection
+            pdfFrame.src = blobUrl;
+            pdfOverlay.classList.add('open');
+            
+        }} catch(e) {{
+            console.error("Erreur conversion PDF:", e);
+            alert("Erreur lors de l'ouverture du PDF.");
         }}
     }}
+
+    function closePdfReader() {{
+        pdfOverlay.classList.remove('open');
+        pdfFrame.src = ""; // Vide la mémoire
+    }}
+
+    // --- ANIMATION SCROLL (Doubles accolades {{ }}) ---
+    let autoSpeed = -0.025; let isDragging = false, startX = 0, currentRotation = 0, velocity = 0, lastX = 0;
+    window.addEventListener('scroll', () => {{
+        const scrollY = window.scrollY; const h = window.innerHeight;
+        let op1 = 1 - (scrollY / (h * 0.6)); intro1.style.opacity = Math.max(0, op1); intro1.style.transform = `translate(-50%, -50%) scale(${{1 - scrollY * 0.0002}})`;
+        let op2 = 0; if (scrollY > h * 0.8 && scrollY < h * 2.2) {{ if (scrollY < h * 1.2) op2 = (scrollY - h * 0.8) / (h * 0.4); else if (scrollY < h * 1.8) op2 = 1; else op2 = 1 - (scrollY - h * 1.8) / (h * 0.4); }} intro2.style.opacity = Math.max(0, op2); intro2.style.transform = `translate(-50%, -50%) scale(${{0.8 + (scrollY - h) * 0.0005}})`;
+        let bg2Op = (scrollY > h * 0.5) ? (scrollY - h * 0.5) / (h * 0.7) : 0; bg2.style.opacity = Math.min(1, Math.max(0, bg2Op));
+        let bg3Op = (scrollY > h * 1.8) ? (scrollY - h * 1.8) / (h * 0.7) : 0; bg3.style.opacity = Math.min(1, Math.max(0, bg3Op));
+        let sceneOp = (scrollY > h * 2.0) ? (scrollY - h * 2.0) / (h * 0.5) : 0; sceneWrapper.style.opacity = Math.min(1, Math.max(0, sceneOp));
+        if (sceneOp > 0.9) sceneWrapper.classList.add('active'); else sceneWrapper.classList.remove('active');
+    }});
+
+    window.addEventListener('touchstart', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!sceneWrapper.classList.contains('active')) return; isDragging = true; startX = e.touches[0].clientX; lastX = e.touches[0].clientX; velocity = 0; }}, {{ passive: false }});
+    window.addEventListener('touchmove', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!isDragging) return; if(e.cancelable) e.preventDefault(); const x = e.touches[0].clientX; velocity = (x - lastX) * 0.5; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }}, {{ passive: false }});
+    window.addEventListener('touchend', () => {{ isDragging = false; }});
+    window.addEventListener('mousedown', (e) => {{ if (modalOverlay.classList.contains('open') || pdfOverlay.classList.contains('open')) return; if (!sceneWrapper.classList.contains('active')) return; isDragging = true; startX = e.clientX; lastX = e.clientX; velocity = 0; document.body.style.cursor = "grabbing"; }});
+    window.addEventListener('mousemove', (e) => {{ if (!isDragging) return; const x = e.clientX; velocity = (x - lastX) * 0.3; currentRotation += velocity; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; lastX = x; }});
+    window.addEventListener('mouseup', () => {{ isDragging = false; if (sceneWrapper.classList.contains('active')) document.body.style.cursor = "grab"; }});
+    function animate() {{ requestAnimationFrame(animate); if (!isDragging && !modalOverlay.classList.contains('open') && !pdfOverlay.classList.contains('open')) {{ velocity *= 0.95; currentRotation += velocity + autoSpeed; carousel.style.transform = `rotateY(${{currentRotation}}deg)`; }} }}
     animate();
     window.dispatchEvent(new Event('scroll'));
 </script>
