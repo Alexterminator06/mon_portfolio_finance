@@ -102,40 +102,36 @@ projects = [
     },
     {
         "id": 2,
-        "title": "Bot Trading",
-        "desc_short": "Trading Automatique",
-        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
-        "tech": ["Python", "Binance API", "Pandas", "AWS"],
-        "link_github": "https://github.com/ton-profil/bot",
-        "report_html": r"<h3>Machine Learning</h3><p>Utilisation de réseaux de neurones pour prédire les tendances du marché.</p>"
+        "title": "Financial Dashboard",
+        "desc_short": "Single Asset / Portfolio",
+        "desc_long": "Not ready yet",
+
+
 
     },
     {
         "id": 3,
-        "title": "Bot Trading",
+        "title": "Trading Bot",
         "desc_short": "Trading Automatique",
-        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
-        "tech": ["Python", "Binance API", "Pandas", "AWS"],
-        "link_github": "https://github.com/ton-profil/bot",
-        "report_html": r"<h3>Machine Learning</h3><p>Utilisation de réseaux de neurones pour prédire les tendances du marché.</p>"
+        "desc_long": "Not ready yet",
+
+
+
     },
      {
         "id": 4,
-        "title": "Bot Trading",
-        "desc_short": "Trading Automatique",
-        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
-        "tech": ["Python", "Binance API", "Pandas", "AWS"],
-        "link_github": "https://github.com/ton-profil/bot",
-        "report_html": r"<h3>Machine Learning</h3><p>Utilisation de réseaux de neurones pour prédire les tendances du marché.</p>"
+        "title": "Bank Solvency",
+        "desc_short": "Indice Computing",
+        "desc_long": "Not ready yet",
+
+
     },
     {
         "id": 5,
-        "title": "Bot Trading",
-        "desc_short": "Trading Automatique",
-        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
-        "tech": ["Python", "Binance API", "Pandas", "AWS"],
-        "link_github": "https://github.com/ton-profil/bot",
-        "report_html": r"<h3>Machine Learning</h3><p>Utilisation de réseaux de neurones pour prédire les tendances du marché.</p>"
+        "title": "Commoditiy Trading",
+        "desc_short": "Brent Crude",
+        "desc_long": "Not ready yet",
+
     }
 ]
 
