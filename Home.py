@@ -8,34 +8,48 @@ import json
 st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
 
 # --- 2. FONCTIONS ROBUSTES ---
-def get_base64_image(filename):
-    possible_paths = [os.path.join("assets", filename), filename, os.path.join(".", filename)]
-    found_path = None
+def get_base64_image(image_filename):
+    # Liste des chemins où chercher l'image
+    possible_paths = [
+        os.path.join("assets", "Portfolio hedge", image_filename), # Chemin précis
+        os.path.join("assets", image_filename),
+        image_filename
+    ]
+    
     for path in possible_paths:
         if os.path.exists(path):
-            found_path = path
-            break
-    if not found_path: return None
-    try:
-        with open(found_path, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode()
-        ext = os.path.splitext(found_path)[1].lower().replace('.', '')
-        if ext == 'jpg': ext = 'jpeg'
-        return f"data:image/{ext};base64,{encoded}"
-    except Exception:
-        return None
+            try:
+                with open(path, "rb") as img_file:
+                    encoded = base64.b64encode(img_file.read()).decode()
+                
+                # Détection de l'extension pour le type MIME
+                ext = os.path.splitext(path)[1].lower().replace('.', '')
+                if ext == 'jpg': ext = 'jpeg'
+                
+                return f"data:image/{ext};base64,{encoded}"
+            except Exception as e:
+                print(f"Erreur lors de la lecture de {path}: {e}")
+                return None
     
-def load_report_content(filename):
-    """Lit un fichier HTML/Texte dans le dossier reports"""
-    # On construit le chemin : dossier actuel + reports + nom du fichier
+    # Debug si rien n'est trouvé
+    print(f"⚠️ Image introuvable après test des chemins : {image_filename}")
+    return None
+    
+def load_report_with_images(filename, image_map={}):
     file_path = os.path.join("reports", filename)
-    
     if os.path.exists(file_path):
-        # On lit le fichier en UTF-8 pour gérer les accents
         with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
-    else:
-        return "<p>Rapport non disponible (Fichier manquant).</p>"
+            content = f.read()
+            
+        for placeholder, img_name in image_map.items():
+            img_b64 = get_base64_image(img_name)
+            if img_b64:
+                # On cherche {MON_MARQUEUR} et on remplace par le code base64
+                content = content.replace(f"{{{placeholder}}}", img_b64)
+            else:
+                print(f"Echec remplacement pour {placeholder}")
+        return content
+    return "<p>Rapport introuvable.</p>"
 
 # --- 3. CHARGEMENT DES ASSETS ---
 IMG_INTRO1 = "marble.jpg"
@@ -47,6 +61,7 @@ b64_intro1 = get_base64_image(IMG_INTRO1)
 b64_intro2 = get_base64_image(IMG_INTRO2)
 b64_final  = get_base64_image(IMG_FINAL)
 b64_marble = get_base64_image(IMG_MARBLE)
+
 
 # CSS Backgrounds
 css_bg1 = f"url('{b64_intro1}')" if b64_intro1 else "#000000"
@@ -66,7 +81,12 @@ projects = [
         "desc_long": "This project implements a machine learning strategy to hedge a portfolio of derivatives, aiming to predict optimal hedge ratios while minimizing Greek risks (Delta, Gamma, Vega). By training a Hybrid/Ensemble model on synthetic data from Monte Carlo simulations, the approach outperforms traditional Black-Scholes models in adhering to strict risk constraints.",
         "tech": ["Python", "Derivatives Pricing","Risk Management", "Machine Learning","Model Optimization"],
         "link_github": "https://github.com/TeoBourscheidt/Machine_learning",
-        "report_html": load_report_content("rapport_machine_learning.html")
+        "report_html": load_report_with_images("rapport_machine_learning.html", image_map={
+                "IMG_DATA_ANALYSIS": "data analysis.jpg",
+                "IMG_CORR": "correlation matrix.jpg",
+                "IMG_COMPA": "value comparison.jpg",
+                "IMG_COMPA2": "value comparison 2.jpg"
+            })
     },
     {
        "id": 1,
@@ -370,7 +390,7 @@ carousel_html = f"""
 
     .modal-card {{
         max-width: 90%;
-        height: auto;
+        max-height: 90%;
         background: #F8F3E6;
         border: 1px solid #D4AF37; /* Bordure Or */
         box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);

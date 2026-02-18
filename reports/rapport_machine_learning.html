@@ -1,6 +1,6 @@
 <h3>Hedging a Portfolio with Greek Constraints</h3>
 <p><strong>Machine Learning Project Report</strong></p>
-<p><strong>Authors : </strong>Alexei Caminade, Teo Bourscheidt, Hugo Boutevillain </p>
+<p><strong>Authors:</strong> Teo Bourscheidt, Hugo Boutevillain, Alexei Caminade</p>
 
 <h3>Abstract</h3>
 <p>This report details the implementation of a machine learning-based approach to hedge a portfolio of derivatives.</p>
@@ -85,9 +85,23 @@
 <h3>3.1 Statistics</h3>
 <p>Visual inspection of the simulated paths confirms that our data exhibits realistic financial characteristics. As shown in Figure 1, the portfolio value follows a stochastic process consistent with market behavior.</p>
 
+
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_DATA_ANALYSIS}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+
+
 <h3>3.2 Correlation Matrix</h3>
 <p>A crucial step was analyzing the correlation between our input features and the target variable (Hedge Ratio).</p>
-<p>The correlation matrix reveals that while the hedge ratio is correlated with the portfolio Delta, there are significant non-linear dependencies with Gamma and Vega. This observation strongly suggests that linear models will be insufficient for this task.</p>
+<p>The correlation matrix (Figure 2) reveals that while the hedge ratio is correlated with the portfolio Delta, there are significant non-linear dependencies with Gamma and Vega. This observation strongly suggests that linear models will be insufficient for this task.</p>
+
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_CORR}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
 
 <h3>4. Problem Formalization</h3>
 
@@ -109,6 +123,12 @@
 <p>$$ H_{t} = w_{0} + w_{1}S_{t} + w_{2}\sigma_{t} + ... $$</p>
 <p>Verdict: While interpretable and fast, this model performed poorly. It completely failed to capture the convexity of the options (Gamma effects) and the interactions between volatility and price.</p>
 
+    
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_COMPA}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+
 <h3>5.2 Multiple Non-Linear Regression</h3>
 <p>Since a simple linear model was clearly not flexible enough, we moved on to several non-linear approaches. The idea is still the same, find a function $f(x)$ that best predicts $y$, but each model captures non-linearity in its own way:</p>
 <p>$$ \theta^{*} = \arg \min_{\theta} \sum_{i=1}^{n} (y_{i} - f(x_{i};\theta))^{2} $$</p>
@@ -118,6 +138,12 @@
     <li><strong>Support Vector Regression (SVR):</strong> SVR also relies on kernels, but with a different philosophy: it tries to fit the data while ignoring small errors inside an $\epsilon$-tube. This makes it naturally robust to noise and often very effective, although computationally heavier.</li>
     <li><strong>Neural Network (MLP):</strong> Finally, the MLP brings the flexibility of neural networks. With multiple layers and non-linear activations, it can learn quite complex patterns—sometimes the most complex ones. However, this comes at the cost of careful tuning and a higher sensitivity to the amount of data.</li>
 </ul>
+
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_COMPA2}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
 <p>Verdict: Switching to non-linear models clearly improved the overall predictions. Kernel-based models (Kernel Ridge and SVR) gave smooth, stable results, while the MLP was able to capture more intricate relationships in the data.</p>
 
 <h3>5.3 GridSearch</h3>
@@ -137,6 +163,7 @@
     <li><strong>Overfitting:</strong> Some models performed extremely well on the training data but lost accuracy on the test samples. This behavior suggests that the model is memorizing noise rather than learning the true structure. GridSearchCV helped us tune the hyperparameters to reduce variance.</li>
     <li><strong>Underfitting:</strong> Conversely, certain models showed low $R^{2}$ scores on both training and test sets. These models failed to capture the non-linear complexity of the problem from the start. Linear regression or shallow polynomial models fell into this category.</li>
 </ul>
+
 
 <h3>6.2 Data Imbalance</h3>
 <p>Financial data is often imbalanced; extreme events (tails) are rare. Our dataset had fewer samples for deep in-the-money or out-of-the-money options.</p>
