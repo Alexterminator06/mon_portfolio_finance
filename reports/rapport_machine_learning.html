@@ -1,0 +1,206 @@
+<h3>Hedging a Portfolio with Greek Constraints</h3>
+<p><strong>Machine Learning Project Report</strong></p>
+<p><strong>Authors : </strong>Alexei Caminade, Teo Bourscheidt, Hugo Boutevillain </p>
+
+<h3>Abstract</h3>
+<p>This report details the implementation of a machine learning-based approach to hedge a portfolio of derivatives.</p>
+<p>Moving beyond traditional analytical models like Black-Scholes, we explore how supervised learning algorithms ranging from linear regression to ensemble methods optimized via GridSearch can predict optimal hedge ratios while strictly adhering to Greek risk constraints (Delta, Gamma, Vega).</p>
+
+<h3>1. Introduction</h3>
+
+<h3>1.1 Context</h3>
+<p>Portfolio hedging remains one of the most critical challenges in quantitative finance.</p>
+<p>Traders and asset managers must constantly manage portfolios of derivatives whose values fluctuate based on multiple risk factors, such as the underlying asset price ($S_{t}$), volatility ($\sigma$), and time to maturity.</p>
+<p>Traditionally, hedging relies on analytical closed-form solutions like the Black-Scholes model. However, these models rely on strong assumptions (constant volatility, frictionless markets) that rarely hold in reality.</p>
+<p>When market conditions deviate from these theoretical assumptions, or when payoffs become complex, analytical hedging becomes inaccurate. This discrepancy motivates our shift towards Machine Learning (ML) methods to learn hedging strategies directly from data.</p>
+
+<h3>1.2 Objectives</h3>
+<p>Our goal is not simply to predict the price of an option, but to develop a model capable of:</p>
+<ul>
+    <li>Estimating the optimal hedge ratio ($H_{t}$).</li>
+    <li>Minimizing the portfolio's exposure to second-order risks (Greeks).</li>
+    <li>Strictly respecting predefined risk limits imposed by risk management desks.</li>
+</ul>
+<p>We trained our strategy on data generated via Monte Carlo simulations to capture realistic market dynamics.</p>
+
+<h3>1.3 Link to our specialization</h3>
+<p>As engineering students majoring in Financial Engineering, this project bridges the gap between theory and practice. It directly applies concepts from:</p>
+<ul>
+    <li>Derivatives Pricing: Understanding the non-linear behavior of options.</li>
+    <li>Risk Management: Controlling Greeks (Delta, Gamma, Vega).</li>
+    <li>Machine Learning: Applying regression and optimization techniques to financial time series.</li>
+</ul>
+
+<h3>2. Dataset description</h3>
+
+<h3>2.1 Source of the Data</h3>
+<p>To ensure we had full control over the data generation process, we created a synthetic dataset using Monte Carlo simulations implemented in Python.</p>
+<p>This allowed us to generate 10,000 paths including:</p>
+<ul>
+    <li>Stochastic volatility components.</li>
+    <li>Corresponding option prices and their analytical Greeks (Delta, Gamma, Vega).</li>
+    <li>The target variable: the optimal hedge ratio derived from numerical optimization.</li>
+</ul>
+
+<h3>2.2 Structure of the Dataset</h3>
+<p>The resulting dataset is tabular, where each row represents a time step $t$ in a simulation. The key features used for training are summarized in the table below.</p>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>$S_{t}$</td>
+        <td>Underlying price at time $t$</td>
+    </tr>
+    <tr>
+        <td>$r_{t}$</td>
+        <td>Risk-free rate</td>
+    </tr>
+    <tr>
+        <td>$T_{min}, T_{max}, T_{mean}$</td>
+        <td>Maturity statistics of the options in the portfolio</td>
+    </tr>
+    <tr>
+        <td>$\sigma$</td>
+        <td>Instantaneous volatility</td>
+    </tr>
+    <tr>
+        <td>$\Delta_{i,t}, \Gamma_{i,t}, \nu_{i,t}$</td>
+        <td>Portfolio Greeks (Delta, Gamma, Vega)</td>
+    </tr>
+    <tr>
+        <td>$\Delta_{i}, \Gamma_{i}, \nu_{i}$</td>
+        <td>Option Greeks for each option $i$ (Delta, Gamma, Vega)</td>
+    </tr>
+    <tr>
+        <td>$x_{1},...,x_{n}$</td>
+        <td>Target: Optimal positions</td>
+    </tr>
+</table>
+
+<h3>3. Data exploration</h3>
+
+<h3>3.1 Statistics</h3>
+<p>Visual inspection of the simulated paths confirms that our data exhibits realistic financial characteristics. As shown in Figure 1, the portfolio value follows a stochastic process consistent with market behavior.</p>
+
+<h3>3.2 Correlation Matrix</h3>
+<p>A crucial step was analyzing the correlation between our input features and the target variable (Hedge Ratio).</p>
+<p>The correlation matrix reveals that while the hedge ratio is correlated with the portfolio Delta, there are significant non-linear dependencies with Gamma and Vega. This observation strongly suggests that linear models will be insufficient for this task.</p>
+
+<h3>4. Problem Formalization</h3>
+
+<h3>4.1 Objective Function</h3>
+<p>We formulated the hedging problem as an optimization task where we seek a hedge ratio $H_{t}$ that minimizes the Greeks exposure:</p>
+<p>$$ \min_{H} (\alpha\Delta_{total}^{2} + \beta\Gamma_{total}^{2}) $$</p>
+<p>Subject to constraints:</p>
+<p>$$ |\Delta| \le \Delta_{max}, \quad |\Gamma| \le \Gamma_{max} $$</p>
+
+<h3>4.2 Solution</h3>
+<p>Instead of solving this optimization problem at every step (which is computationally expensive), we treat it as a Supervised Learning problem. We train a model $f_{\theta}$ to approximate the optimal hedge:</p>
+<p>$$ H_{t} \approx f_{\theta}(S_{t},\sigma_{t},\Delta_{t},\Gamma_{t},\nu_{t},...) $$</p>
+<p>We experimented with three distinct modeling approaches: Linear Regression, Non-Linear Regression.</p>
+
+<h3>5. Models</h3>
+
+<h3>5.1 Multiple Linear Regression</h3>
+<p>We started with a simple Multiple Linear Regression to establish a baseline. The model attempts to predict $H_{t}$ as a weighted sum of inputs:</p>
+<p>$$ H_{t} = w_{0} + w_{1}S_{t} + w_{2}\sigma_{t} + ... $$</p>
+<p>Verdict: While interpretable and fast, this model performed poorly. It completely failed to capture the convexity of the options (Gamma effects) and the interactions between volatility and price.</p>
+
+<h3>5.2 Multiple Non-Linear Regression</h3>
+<p>Since a simple linear model was clearly not flexible enough, we moved on to several non-linear approaches. The idea is still the same, find a function $f(x)$ that best predicts $y$, but each model captures non-linearity in its own way:</p>
+<p>$$ \theta^{*} = \arg \min_{\theta} \sum_{i=1}^{n} (y_{i} - f(x_{i};\theta))^{2} $$</p>
+<ul>
+    <li><strong>Polynomial Regression:</strong> We start by expanding the original features into polynomial terms. This is a simple trick that allows the model to learn curved relationships. It works surprisingly well at low degrees, but can quickly become unstable when the feature space explodes.</li>
+    <li><strong>Kernel Ridge Regression:</strong> Here, we use a kernel (such as RBF) to let the model "bend" the data into a higher-dimensional space. The result is a smooth non-linear predictor that stays well-behaved thanks to the L2 regularization.</li>
+    <li><strong>Support Vector Regression (SVR):</strong> SVR also relies on kernels, but with a different philosophy: it tries to fit the data while ignoring small errors inside an $\epsilon$-tube. This makes it naturally robust to noise and often very effective, although computationally heavier.</li>
+    <li><strong>Neural Network (MLP):</strong> Finally, the MLP brings the flexibility of neural networks. With multiple layers and non-linear activations, it can learn quite complex patterns—sometimes the most complex ones. However, this comes at the cost of careful tuning and a higher sensitivity to the amount of data.</li>
+</ul>
+<p>Verdict: Switching to non-linear models clearly improved the overall predictions. Kernel-based models (Kernel Ridge and SVR) gave smooth, stable results, while the MLP was able to capture more intricate relationships in the data.</p>
+
+<h3>5.3 GridSearch</h3>
+<p>After tuning each model independently, we wanted to build something more reliable than any single algorithm. Instead of trying to pick "the best" model, we chose to combine several of them.</p>
+<ul>
+    <li><strong>Hyperparameter Tuning:</strong> Using GridSearchCV with cross-validation, we optimized all our non-linear models separately (Polynomial Regression, Kernel Ridge, SVR, and MLP). This ensured that each model was performing at its best before being combined.</li>
+    <li><strong>Ensembling:</strong> We then built a small hybrid model by averaging the predictions of the four tuned models. This acts like a "soft voting" regressor: instead of relying on a single opinion, we take the consensus of several predictors.</li>
+</ul>
+<p>Verdict: This hybrid ensemble turned out to be the most stable and the most accurate approach. By blending different algorithms, we reduced variance and smoothed out the noise inherent in the underlying data.</p>
+
+<h3>6. Obstacles</h3>
+<p>Throughout the project, we faced several implementation challenges:</p>
+
+<h3>6.1 Overfitting and Underfitting Analysis</h3>
+<p>To assess the reliability of each model, we compared its performance on the training set and on the test set. By looking at the differences in MSE and $R^{2}$, we were able to quickly identify whether a model was overfitting or underfitting.</p>
+<ul>
+    <li><strong>Overfitting:</strong> Some models performed extremely well on the training data but lost accuracy on the test samples. This behavior suggests that the model is memorizing noise rather than learning the true structure. GridSearchCV helped us tune the hyperparameters to reduce variance.</li>
+    <li><strong>Underfitting:</strong> Conversely, certain models showed low $R^{2}$ scores on both training and test sets. These models failed to capture the non-linear complexity of the problem from the start. Linear regression or shallow polynomial models fell into this category.</li>
+</ul>
+
+<h3>6.2 Data Imbalance</h3>
+<p>Financial data is often imbalanced; extreme events (tails) are rare. Our dataset had fewer samples for deep in-the-money or out-of-the-money options.</p>
+<p>Solution: We used over-sampling techniques for these rare regions and experimented with stratified simulation to ensure the model saw enough "extreme" scenarios during training.</p>
+
+<h3>7. Results Comparison</h3>
+
+<h3>7.1 Performance Metrics</h3>
+<p>We evaluated our models based on two standard regression metrics:</p>
+<ul>
+    <li><strong>MSE (Mean Squared Error):</strong> Measures the average squared difference between the predicted and actual hedge ratios. Lower values indicate more accurate predictions.</li>
+    <li><strong>$R^{2}$ (Coefficient of Determination):</strong> Indicates the proportion of variance in the hedge ratio explained by the model. Values closer to 1 show better fit to the data.</li>
+</ul>
+
+<h3>7.2 Summary of Results</h3>
+<p>The table below summarizes the performance of our best models on the test set. The Hybrid/Ensemble approach consistently outperforms individual models.</p>
+
+<table>
+    <tr>
+        <th>Model</th>
+        <th>MSE</th>
+        <th>$R^{2}$</th>
+        <th>Overall Rank</th>
+    </tr>
+    <tr>
+        <td>Polynomial Regression</td>
+        <td>0.1014</td>
+        <td>0.8984</td>
+        <td>Moderate</td>
+    </tr>
+    <tr>
+        <td>Kernel Ridge Regression</td>
+        <td>0.0663</td>
+        <td>0.9338</td>
+        <td>Good</td>
+    </tr>
+    <tr>
+        <td>Support Vector Regression (SVR)</td>
+        <td>0.0666</td>
+        <td>0.9337</td>
+        <td>Good</td>
+    </tr>
+    <tr>
+        <td>Multi-Layer Perceptron (Grid)</td>
+        <td>0.0501</td>
+        <td>0.9499</td>
+        <td>Very Good</td>
+    </tr>
+    <tr>
+        <td>Hybrid / Ensemble</td>
+        <td>Lowest</td>
+        <td>Highest</td>
+        <td>Best</td>
+    </tr>
+</table>
+
+<h3>8. Conclusion</h3>
+<p>This project successfully demonstrated that machine learning can automate portfolio hedging under complex Greek constraints. While linear models are insufficient for derivatives, non-linear models optimized via GridSearch and combined into an Ensemble provide a robust solution.</p>
+<p>The Hybrid model achieved the lowest tracking error and best adherence to risk limits. Future improvements could focus on Reinforcement Learning (Deep Hedging), which would allow the agent to optimize the hedging strategy dynamically over time rather than correcting it instantaneously at each step.</p>
+
+<h3>References</h3>
+<ul>
+    <li>Hull, J. C. (2021). Options, Futures, and Other Derivatives. Pearson.</li>
+    <li>Bishop, C. (2006). Pattern Recognition and Machine Learning. Springer.</li>
+    <li>Buehler, H., et al. (2019). "Deep Hedging". Quantitative Finance.</li>
+    <li>Glasserman, P. (2003). Monte Carlo Methods in Financial Engineering. Springer.</li>
+</ul>
