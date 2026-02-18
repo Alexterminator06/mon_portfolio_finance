@@ -121,7 +121,7 @@ projects = [
      {
         "id": 4,
         "title": "Bank Solvency",
-        "desc_short": "Indice Computing",
+        "desc_short": "Indice Computing Not ready yet",
         "desc_long": "Not ready yet Not ready yet",
 
 
@@ -129,7 +129,7 @@ projects = [
     {
         "id": 5,
         "title": "Commoditiy Trading",
-        "desc_short": "Brent Crude",
+        "desc_short": "Brent Crude Not ready yet",
         "desc_long": "Not ready yet Not ready yet",
 
     }
