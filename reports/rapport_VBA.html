@@ -1,0 +1,141 @@
+<h3>Bitcoin Prices and Option Pricing</h3>
+<p><strong>Author : </strong>Caminade Alexei</p>
+<p><strong>Date : </strong> January 2026</p>
+
+<h3>1 Introduction</h3>
+<p>Bitcoin is highly volatile. This project analyzes its price movements over the last year and tests whether the Black-Scholes model can price options on it.</p>
+<p>The main things we had to do were:</p>
+<ul>
+    <li>Download and clean one year of Bitcoin data.</li>
+    <li>Calculate risk numbers like volatility and kurtosis.</li>
+    <li>Price European Call and Put options.</li>
+    <li>Do everything twice: once in Excel and once in VBA to check our work.</li>
+</ul>
+
+<h3>2 Finding and Preparing the Data</h3>
+
+<h3>2.1 Source</h3>
+<p>We got the daily data for BTC-USD from Yahoo Finance. We used a period of one year.</p>
+
+<h3>2.2 Cleaning the data</h3>
+<p>The data wasn't perfect when we downloaded it. We had to fix a few things:</p>
+<ul>
+    <li>The dates were stored as text.</li>
+    <li>We sorted the data from oldest to newest so the returns would be correct.</li>
+    <li>We checked for missing values.</li>
+</ul>
+
+<h3>2.3 Log returns</h3>
+<p>We used logarithmic returns because they are better for adding up over time:</p>
+<p>$$r_{t}=ln(\frac{P_{t}}{P_{t-1}})$$</p>
+
+<h3>3 Statistics</h3>
+
+<h3>3.1 Annualized Volatility</h3>
+<p>Because Bitcoin trades daily, including weekends, we annualized volatility using 365 days instead of the standard 252.</p>
+<p>$$\sigma_{annual}=\sigma_{daily}\times\sqrt{365}$$</p>
+
+<h3>3.2 Skewness and Kurtosis</h3>
+<p>We also looked at the shape of the distribution. Skewness tells us if the returns lean to one side. Kurtosis tells us about the tails. We found that Bitcoin has high positive excess kurtosis. This means "fat tails", so extreme price jumps happen more often than a normal model predicts.</p>
+
+<h3>3.3 Our Results</h3>
+<p>Here are the numbers we got for the 1-year statistics:</p>
+
+<table>
+    <tr>
+        <th>Metric</th>
+        <th>Value</th>
+        <th>Comment</th>
+    </tr>
+    <tr>
+        <td>Mean daily return</td>
+        <td>-0.0230%</td>
+        <td>slightly negative</td>
+    </tr>
+    <tr>
+        <td>Max daily return</td>
+        <td>9.0932%</td>
+        <td>big jump up</td>
+    </tr>
+    <tr>
+        <td>Min daily return</td>
+        <td>-8.9328%</td>
+        <td>big crash down</td>
+    </tr>
+    <tr>
+        <td>Annualized volatility</td>
+        <td>41.6851%</td>
+        <td>very high risk</td>
+    </tr>
+    <tr>
+        <td>Skewness</td>
+        <td>-0.0169</td>
+        <td>symmetric</td>
+    </tr>
+    <tr>
+        <td>Excess kurtosis</td>
+        <td>2.3494</td>
+        <td>fat tails</td>
+    </tr>
+</table>
+
+<h3>4 Black-Scholes Option Pricing</h3>
+
+<h3>4.1 Formulas</h3>
+<p>We used the standard formulas for European options:</p>
+<p>$$C=S_{0}N(d_{1})-Ke^{-rT}N(d_{2})$$</p>
+<p>$$P=Ke^{-rT}N(-d_{2})-S_{0}N(-d_{1})$$</p>
+
+<h3>4.2 Limits</h3>
+<p>Black-Scholes assumes volatility never changes, which is not true for Bitcoin. So these prices are just a theoretical baseline.</p>
+
+<h3>5 Implementation</h3>
+
+<h3>5.1 Excel</h3>
+<p>We did all the calculations in excel first using functions like STDEV.S and NORM.S.DIST. This was our baseline to check against.</p>
+
+<h3>5.2 VBA</h3>
+<p>Then we wrote our own functions in VBA. We created a function called BS_Call and BS_Put.</p>
+
+<h3>6 Difference between excel and VBA</h3>
+<p>The most important part was checking if our code was right. We compared the excel result and the VBA result. In our file, the difference was exactly 0.00.</p>
+
+<table>
+    <tr>
+        <th>Option</th>
+        <th>Excel</th>
+        <th>VBA</th>
+        <th>Diff.</th>
+    </tr>
+    <tr>
+        <td>Call</td>
+        <td>7168.93</td>
+        <td>7168.93</td>
+        <td>0.00</td>
+    </tr>
+    <tr>
+        <td>Put</td>
+        <td>15789.55</td>
+        <td>15789.55</td>
+        <td>0.00</td>
+    </tr>
+</table>
+
+<h3>7 Figures</h3>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_BTC}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_LOG}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_CP}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+
+<h3>8 Conclusion</h3>
+<p>We got a fully implementable tool to assess Bitcoin value and options pricing from it. The mathematical implementation is correct.</p>
+<p>However, we also found that Bitcoin has "fat tails". Thus, Black-Scholes isn't exactly the best model since it lowers probabilities of tail events, but it works as an adequate starting point.</p>

@@ -9,30 +9,30 @@ st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="�
 
 # --- 2. FONCTIONS ROBUSTES ---
 def get_base64_image(image_filename):
-    # Liste des chemins où chercher l'image
-    possible_paths = [
-        os.path.join("assets", "Portfolio hedge", image_filename), # Chemin précis
-        os.path.join("assets", image_filename),
-        image_filename
+    # Liste de tous les dossiers où vous rangez vos images
+    folders_to_search = [
+        os.path.join("assets", "portfolio hedge"),
+        os.path.join("assets", "bitcoin option"),
+        "assets", # Dossier racine des assets
+        "."       # Dossier racine du projet
     ]
     
-    for path in possible_paths:
+    for folder in folders_to_search:
+        path = os.path.join(folder, image_filename)
+        
         if os.path.exists(path):
             try:
                 with open(path, "rb") as img_file:
                     encoded = base64.b64encode(img_file.read()).decode()
                 
-                # Détection de l'extension pour le type MIME
                 ext = os.path.splitext(path)[1].lower().replace('.', '')
                 if ext == 'jpg': ext = 'jpeg'
-                
                 return f"data:image/{ext};base64,{encoded}"
             except Exception as e:
-                print(f"Erreur lors de la lecture de {path}: {e}")
+                print(f"Erreur sur {path}: {e}")
                 return None
-    
-    # Debug si rien n'est trouvé
-    print(f"⚠️ Image introuvable après test des chemins : {image_filename}")
+                
+    print(f"⚠️ Image non trouvée : {image_filename}")
     return None
     
 def load_report_with_images(filename, image_map={}):
@@ -90,12 +90,15 @@ projects = [
     },
     {
        "id": 1,
-        "title": "Bot Trading",
-        "desc_short": "Trading Automatique",
-        "desc_long": "Un algorithme sophistiqué capable d'analyser les tendances du Bitcoin en temps réel. Il utilise des indicateurs techniques (RSI, MACD) pour exécuter des ordres d'achat et de vente sans intervention humaine. Sécurisé et connecté à l'API Binance.",
-        "tech": ["Python", "Binance API", "Pandas", "AWS"],
-        "link_github": "https://github.com/ton-profil/bot",
-        "report_html": r"<h3>Régression Linéaire</h3><p>Le modèle simple est : $$ y = \beta_0 + \beta_1 x_1 + \epsilon $$</p>"
+        "title": "Option Pricing",
+        "desc_short": "Bitcoin",
+        "desc_long": "This project analyzes Bitcoin's price volatility over a one-year period to test the applicability of the Black-Scholes model for pricing European options. Using daily data from Yahoo Finance, the study calculates key risk metrics like annualized volatility and excess kurtosis to highlight Bitcoin's fat-tail distribution, which challenges traditional model assumptions . The tool was implemented in both Excel and VBA to ensure mathematical accuracy through cross-verification.",
+        "tech": ["VBA", "Excel", "Statistics", "Data Engineering", "Quantitative Finance"],
+        "report_html": load_report_with_images("rapport_VBA.html", image_map={
+                "IMG_BTC": "bitcoin price.jpg",
+                "IMG_LOG": "log return.jpg",
+                "IMG_CP": "call put.jpg",
+            })
     },
     {
         "id": 2,
@@ -522,13 +525,13 @@ carousel_html = f"""
                 <div id="m-tech"></div>
                 
                 <div class="modal-buttons">
-                    <a href="#" target="_blank" class="btn btn-outline" id="m-code">Voir Code</a>
-                    <div class="btn btn-gold" onclick="showReport()">📄 Lire le Rapport</div>
+                    <a href="#" target="_blank" class="btn btn-outline" id="m-code">See Code</a>
+                    <div class="btn btn-gold" onclick="showReport()">Read Report</div>
                 </div>
             </div>
 
             <div id="view-report">
-                <div class="btn-back" onclick="hideReport()">← Retour au résumé</div>
+                <div class="btn-back" onclick="hideReport()">← Back</div>
                 <div id="report-content">
                     </div>
             </div>
@@ -558,12 +561,25 @@ carousel_html = f"""
 
     function openModal(index) {{
         currentProject = projectsData[index];
+        
+        // Remplissage des textes
         mTitle.innerText = currentProject.title;
         mDesc.innerText = currentProject.desc_long;
+        
+        // Gestion des tags techniques
         mTech.innerHTML = "";
         currentProject.tech.forEach(t => mTech.innerHTML += `<span class="tech-tag">${{t}}</span>`);
-        mCode.href = currentProject.link_github;
 
+        // --- GESTION DU BOUTON GITHUB (CODE) ---
+        // On considère que si le lien est "#" ou vide, il n'y a pas de code dispo
+        if (currentProject.link_github && currentProject.link_github !== "#" && currentProject.link_github !== "") {{
+            mCode.href = currentProject.link_github;
+            mCode.style.display = "inline-block"; // On affiche le bouton
+        }} else {{
+            mCode.style.display = "none"; // On cache le bouton
+        }}
+
+        // Réinitialisation des vues de la modale
         viewSummary.style.display = "block";
         viewReport.style.display = "none";
 
