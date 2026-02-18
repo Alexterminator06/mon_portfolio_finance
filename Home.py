@@ -25,7 +25,7 @@ def get_base64_image(filename, filetype="image"):
             return f"data:image/{ext};base64,{encoded}"
         elif filetype == "pdf":
             # MODIFICATION : Retourne le code brut uniquement
-            return encoded
+            return f"data:application/pdf;base64,{encoded}"
     except Exception:
         return None
 
@@ -488,9 +488,10 @@ carousel_html = f"""
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal-card">
             <div class="close-modal" onclick="closeModal()">×</div>
-            <h2 class="modal-title" id="m-title">Titre</h2>
-            <p class="modal-desc" id="m-desc">Desc</p>
+            <h2 class="modal-title" id="m-title">Titre Projet</h2>
+            <p class="modal-desc" id="m-desc">Description</p>
             <div id="m-tech"></div>
+            
             <div class="modal-buttons">
                 <a href="#" target="_blank" class="btn btn-outline" id="m-code">Voir le Code</a>
                 
