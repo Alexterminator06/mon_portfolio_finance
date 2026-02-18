@@ -369,7 +369,7 @@ carousel_html = f"""
     .modal-overlay.open {{ opacity: 1; pointer-events: auto; }}
 
     .modal-card {{
-        width: 1000px; max-width: 90%;
+        max-width: 90%;
         height: auto;
         background: #F8F3E6;
         border: 1px solid #D4AF37; /* Bordure Or */
