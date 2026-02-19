@@ -5,14 +5,14 @@ import os
 import json
 
 # --- 1. CONFIGURATION ---
-st.set_page_config(layout="wide", page_title="Portfolio Prestige", page_icon="🏛️")
+st.set_page_config(layout="wide", page_title="Portfolio Finance", page_icon="🏛️")
 
 # --- 2. FONCTIONS ROBUSTES ---
 def get_base64_image(image_filename):
     # Liste de tous les dossiers où vous rangez vos images
     folders_to_search = [
-        os.path.join("assets", "portfolio hedge"),
-        os.path.join("assets", "bitcoin option"),
+        os.path.join("assets", "Portfolio hedge"),
+        os.path.join("assets", "Bitcoin option"),
         "assets", # Dossier racine des assets
         "."       # Dossier racine du projet
     ]
