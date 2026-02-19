@@ -107,7 +107,7 @@ projects = [
         "desc_short": "Single Asset / Portfolio",
         "desc_long": "A comprehensive, Python-based Streamlit web application designed for quantitative financial analysis. It features automated backtesting of algorithmic trading strategies, AI-driven price predictions, and advanced multi-asset portfolio management with real-time risk metrics.",
         "tech": ["Python", "Data Analysis", "Statistics", "Machine Learning","Algorithmic Trading","Risk Analysis & Correlation"],
-        "link_github": "",
+        "link_github": "https://github.com/Alexterminator06/finance-dashboard",
         "report_html": load_report_with_images("rapport_financial_dashboard.html", image_map={
                 "IMG_ASSET": "asset perf.jpg",
                 "IMG_PORT": "portfolio performance.jpg",
