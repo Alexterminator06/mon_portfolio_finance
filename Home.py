@@ -13,6 +13,7 @@ def get_base64_image(image_filename):
     folders_to_search = [
         os.path.join("assets", "Portfolio hedge"),
         os.path.join("assets", "Bitcoin option"),
+        os.path.join("assets", "Financial dashboard"),
         "assets", # Dossier racine des assets
         "."       # Dossier racine du projet
     ]
@@ -103,8 +104,14 @@ projects = [
     {
         "id": 2,
         "title": "Financial Dashboard",
-        "desc_short": "Single Asset / Portfolio Not ready yet",
-        "desc_long": "Not ready yet",
+        "desc_short": "Single Asset / Portfolio",
+        "desc_long": "A comprehensive, Python-based Streamlit web application designed for quantitative financial analysis. It features automated backtesting of algorithmic trading strategies, AI-driven price predictions, and advanced multi-asset portfolio management with real-time risk metrics.",
+        "tech": ["Python", "Data Analysis", "Statistics", "Machine Learning","Algorithmic Trading","Risk Analysis & Correlation"],
+        "link_github": "",
+        "report_html": load_report_with_images("rapport_financial_dashboard.html", image_map={
+                "IMG_ASSET": "asset perf.jpg",
+                "IMG_PORT": "portfolio performance.jpg",
+                "IMG_PORT_CORR": "port corr.jpg",})
 
 
 
@@ -114,11 +121,16 @@ projects = [
         "title": "Trading Bot",
         "desc_short": "Trading Automatique Not ready yet",
         "desc_long": "Not ready yet",
-
+        "tech": ["VBA", "Excel", "Statistics", "Data Engineering", "Quantitative Finance"],
+        "report_html": load_report_with_images("rapport_VBA.html", image_map={
+                "IMG_BTC": "bitcoin price.jpg",
+                "IMG_LOG": "log return.jpg",
+                "IMG_CP": "call put.jpg",
+            })
 
 
     },
-     {
+    {
         "id": 4,
         "title": "Bank Solvency",
         "desc_short": "Indice Computing Not ready yet",

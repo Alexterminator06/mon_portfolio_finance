@@ -1,0 +1,70 @@
+<h3>Streamlit Finance Dashboard</h3>
+<p><strong>Author : </strong> Alexei Caminade</p>
+<p>This report provides a detailed overview of the Streamlit Finance Dashboard, an automated and highly customizable trading analysis application. The dashboard is structured into two primary tabs and is built to auto-refresh its data every hour.</p>
+
+<h3>1. Data Retrieval and Architecture</h3>
+<p>While the user interface is powered by Streamlit, the backend relies on robust data ingestion pipelines to fetch historical and live OHLCV (Open, High, Low, Close, Volume) data. The application is designed to automatically refresh this data hourly, ensuring that the financial overviews, technical metrics, and AI predictions remain up-to-date with current market conditions.</p>
+
+<h3>2. Tab 1: Single Asset Analysis</h3>
+<p>This tab is engineered for deep technical analysis and backtesting of individual assets.</p>
+
+<h3>2.1 Configuration Panel</h3>
+<p>Users can define the simulation environment by inputting the specific asset ticker, the starting date of the analysis, and the initial capital allocated. The core feature is the selection of a specific trading strategy (Momentum, Bollinger Bands, Dual SMA, or RSI), each coming with customizable parameters.</p>
+
+<h3>2.2 Trading Strategies Explained</h3>
+<p>The dashboard simulates trading based on algorithmic strategies. Here is how each operates:</p>
+<ul>
+    <p><li>Momentum Strategy: Buys the asset when it shows a recent upward trend and sells when the trend turns negative. It capitalizes on the continuation of existing market trends. <br>Parameters : Lookback period.</p></li>
+    <p><li>Bollinger Bands Strategy: A mean-reversion strategy based on volatility. It assumes that prices will revert to their mean. The strategy triggers a Buy signal when the price touches the lower band and a Sell signal when it touches the upper band. <br>Parameters : Moving Average Window ($N$) and the Standard Deviation Multiplier ($k$). Mathematical formulas: <br> $Upper Band = SMA_N + k \times \sigma$ and $Lower Band = SMA_N - k \times \sigma$ <br></p></li>
+    <p><li>Dual SMA Crossover: Uses two moving averages to identify shifts in momentum. A Golden Cross (Buy) occurs when the short-term SMA crosses above the long-term SMA. A Death Cross (Sell) occurs when the short-term SMA crosses below the long-term SMA. <br>Parameters : Short Window and Long Window.</p></li>
+    <p><li>RSI (Relative Strength Index) Strategy: A momentum oscillator that measures the speed and change of price movements. <br>Parameters : RSI Window, Overbought Threshold, and Oversold Threshold. Mathematical formula: <br> $RSI = 100 - \frac{100}{1 + RS}$ <br>(Where RS is the average of $X$ periods' up closes divided by the average of $X$ periods' down closes).</p></li>
+</ul>
+
+<h3>2.3 Financial Overview & AI Prediction</h3>
+<p>This section tracks the monetary performance of the chosen strategy. It displays the final balance, net profit, and total return. Crucially, it provides a benchmark comparison against a standard Buy and Hold strategy to determine if the algorithmic approach actually generated alpha. Additionally, it features an AI-driven prediction modeling the next closing price of the asset.</p>
+
+<h3>2.4 Performance Chart & Technical Comparison</h3>
+<ul>
+    <p><li>Performance Chart: A time-series graph that plots the historical value of the portfolio.</p></li>
+    <p><li>Technical Metrics: Sharpe Ratio measures risk-adjusted return. formula: <br> $S = \frac{R_p - R_f}{\sigma_p}$<br> Maximum Drawdown represents the maximum observed loss from a peak to a trough. Daily Winrate is the percentage of days the strategy closed with a positive return.</p></li>
+</ul>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_ASSET}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<h3>2.5 Daily Report</h3>
+<p>A tabular breakdown providing daily granularity, including the ticker, open price, close price, daily volatility, and max drawdown.</p>
+
+<h3>3. Tab 2: Portfolio Management</h3>
+<p>This tab shifts the focus from individual asset timing to asset allocation and risk management across a basket of securities.</p>
+
+<h3>3.1 Configuration Panel</h3>
+<p>Users can build a custom portfolio by setting the total amount to invest, the starting date, the specific choice of assets, and the exact percentage weights allocated to each different asset.</p>
+
+<h3>3.2 Financial Overview</h3>
+<p>Provides macro-level metrics for the entire basket, including the final overall balance, total PnL (Profit and Loss), the portfolio's annualized volatility, and the total number of assets currently held.</p>
+
+<h3>3.3 Portfolio Performance Chart</h3>
+<p>This visualizer overlays the individual performance curves of each chosen asset against the aggregated value curve of the entire portfolio over time.</p>
+
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_PORT}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<h3>3.4 The Correlation Matrix</h3>
+<p>A critical tool for modern portfolio theory. The correlation matrix is usually displayed as a heatmap showing the relationship between the daily returns of the assets in the portfolio. Values range from -1 to 1.</p>
+<ul>
+    <p><li>A value close to 1 means the assets move in the exact same direction.</p></li>
+    <p><li>A value around 0 means the assets are uncorrelated.</p></li>
+    <p><li>A value close to -1 means they move in opposite directions.</p></li>
+    <p><li>Goal: A well-constructed portfolio seeks assets with low or negative correlations to minimize the overall portfolio volatility.</p></li>
+</ul>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_PORT_CORR}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<h3>3.5 Technical Metrics & Daily Report</h3>
+<p>Similar to the single-asset tab, but calculated for the weighted portfolio. It displays the aggregate Sharpe ratio, maximum drawdown, and daily winrate. Finally, it includes a consolidated daily report grouping the metrics for each individual asset within the portfolio.</p>
