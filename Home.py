@@ -14,6 +14,7 @@ def get_base64_image(image_filename):
         os.path.join("assets", "Portfolio hedge"),
         os.path.join("assets", "Bitcoin option"),
         os.path.join("assets", "Financial dashboard"),
+        os.path.join("assets", "Trading bot"),
         "assets", # Dossier racine des assets
         "."       # Dossier racine du projet
     ]
@@ -119,13 +120,11 @@ projects = [
     {
         "id": 3,
         "title": "Trading Bot",
-        "desc_short": "Trading Automatique Not ready yet",
-        "desc_long": "Not ready yet",
-        "tech": ["VBA", "Excel", "Statistics", "Data Engineering", "Quantitative Finance"],
-        "report_html": load_report_with_images("rapport_VBA.html", image_map={
-                "IMG_BTC": "bitcoin price.jpg",
-                "IMG_LOG": "log return.jpg",
-                "IMG_CP": "call put.jpg",
+        "desc_short": "Automated Trading and Signal Bot",
+        "desc_long": "This Trading Bot is a algorithmic trading dashboard built with Python and Streamlit. It provides a complete quantitative workflow: backtesting historical data, generating real-time Telegram market signals, and executing automated paper trades across Binance and Alpaca. Powered by a dynamic trend-following strategy utilizing EMA, RSI, and ATR, the platform seamlessly bridges the gap between strategy research, risk management, and live market execution.",
+        "tech": ["Python", "Backtesting", "Statistics", "Risk Management", "Algorithmic Trading", "Quantitative Analysis"],
+        "report_html": load_report_with_images("rapport_bot_trading.html", image_map={
+                "IMG_BOT": "bot perf.jpg",
             })
 
 

@@ -1,0 +1,75 @@
+<h3>Trading Bot</h3>
+<p><strong>Author : </strong> Alexei Caminade</p>
+<h3>Executive Summary</h3>
+<p>The <strong>Trading Bot Station</strong> is a comprehensive, multi-environment algorithmic trading dashboard built with Python and Streamlit. It allows users to monitor markets, receive real-time trading signals, simulate automated trading securely, and backtest strategies using historical data. The system is designed around a unified core strategy (Trend-Following + Momentum) applied across three distinct modules: Signal Generation, Local Paper Trading, and Backtesting.</p>
+
+<h3>1. The Core Strategy</h3>
+<p>Before detailing the operational bots, it is crucial to understand the underlying logic that dictates decision-making across the entire system.</p>
+<p>The trading engine relies on a combination of Trend, Momentum, and Volatility indicators calculated via the pandas_ta library on a 1-Hour timeframe:</p>
+<ul>
+    <li><strong>Trend:</strong> Fast Exponential Moving Average (EMA 9) and Slow Exponential Moving Average (EMA 21).</li>
+    <li><strong>Momentum:</strong> Relative Strength Index (RSI 14) with a baseline threshold of 50.</li>
+    <li><strong>Volatility & Risk Management:</strong> Average True Range (ATR 14) used to dynamically calculate Stop Loss (SL) and Take Profit (TP) levels.</li>
+</ul>
+
+<h3>Trade Triggers</h3>
+<ul>
+    <li><strong>Long (Buy) Entry:</strong> Triggered when the Fast EMA crosses above the Slow EMA <br>($EMA_{9} > EMA_{21}$) <strong>AND</strong> the RSI is in bullish territory ($RSI > 50$).</br></li>
+    <li><strong>Short (Sell) Entry:</strong> Triggered when the Fast EMA crosses below the Slow EMA <br>($EMA_{9} < EMA_{21}$) <strong>AND</strong> the RSI is in bearish territory ($RSI < 50$).</br></li>
+</ul>
+
+<h3>2. Module 1: The Signal Bot</h3>
+<p>The Signal Bot is designed to act as an automated market scanner and advisor. It tracks real-time data and pushes actionable alerts directly to the user's smartphone via Telegram.</p>
+<h3>Technical Workflow</h3>
+<ul>
+    <li><strong>Data Ingestion:</strong> The bot connects to the <strong>Alpaca API</strong> (for Cryptocurrencies and US Equities). It periodically polls the market (every 60 seconds) to fetch the last 200 hourly candles.</li>
+    <li><strong>Analysis:</strong> It computes the EMA, RSI, and ATR indicators on the freshly retrieved data.</li>
+    <li><strong>Risk Calculation:</strong> Upon detecting a valid entry signal, it instantly calculates the optimal exit points using volatility:
+        <ul>
+            <li><strong>Stop Loss (SL):</strong> $\text{SL} = \text{Entry Price} \pm (2.0 \times ATR)$</li>
+            <li><strong>Take Profit (TP):</strong> $\text{TP} = \text{Entry Price} \pm (2.6 \times ATR)$</li>
+        </ul>
+    </li>
+    <li><strong>Notification (Telegram Webhook):</strong> Using the Telegram Bot API, it formats a markdown message containing the Asset, Entry Price, SL, and TP, and sends it to the user's specific Chat ID.</li>
+    <li><strong>Anti-Spam Mechanism:</strong> To prevent the user from receiving a message every minute while conditions remain valid, the bot uses a state memory. It will only dispatch a new message when the market transitions from a Neutral/Sell state to a Buy state (or vice-versa).</li>
+</ul>
+
+<h3>3. Module 2: Automated Binance Paper Trading</h3>
+<p>This module is built for risk-free but highly realistic automated execution. It connects directly to the <strong>Binance Testnet (Mock Trading)</strong> environment, executing simulated trades on the exchange's actual servers rather than relying on a local virtual ledger.</p>
+
+<h3>Technical Workflow</h3>
+<ul>
+    <li><strong>API Integration:</strong> The bot utilizes the ccxt library to securely connect to the Binance Testnet using dedicated developer API Keys. It explicitly routes requests to the testnet URLs (bypassing the production environment) to ensure all trades are executed using virtual exchange funds.</li>
+    <li><strong>Live Market Data:</strong> It continuously fetches the latest hourly candles to feed the strategy engine with live market conditions, strictly respecting the exchange's API rate limits.</li>
+    <li><strong>Dynamic State Management:</strong> Before evaluating trade conditions, the bot queries the exchange for the current virtual account balance or open contracts. This ensures the bot maintains an accurate state and only triggers orders when sufficient virtual liquidity is available.</li>
+    <li><strong>Live Logging:</strong> Trade execution confirmations, order fills, and current position states are streamed directly to the user's terminal via the unbuffered Streamlit subprocess configuration.</li>
+</ul>
+
+<h3>4. Module 3: The Backtesting Engine</h3>
+<p>The backtesting module allows the user to mathematically validate the strategy against historical data before deploying it live or in paper trading.</p>
+<h3>Technical Workflow</h3>
+<ul>
+    <li><strong>Historical Data Sourcing:</strong> It uses yfinance to download historical market data (e.g., the last 5 days on a 1-hour interval). The data is strictly cleaned and formatted to ensure compatibility (removing Yahoo Finance's multi-index formatting).</li>
+    <li><strong>Backtesting Framework:</strong> It relies on the highly optimized Backtesting.py Python library. The BotStrategy class inherits from Strategy.py and translates the engine.py logic into vector-based operations.</li>
+    <li><strong>Advanced Risk Management:</strong> Unlike the live bots which use static SL/TP for simplicity, the backtester implements a <strong>Dynamic Trailing Stop</strong>. For every new candle, if the trade is profitable, the Stop Loss is adjusted upward <br>($\text{Trailing Stop} = \text{Price} - (1.5 \times ATR)$) to lock in gains.</br></li>
+    <li><strong>Performance Metrics:</strong> The engine outputs a comprehensive statistical array, including:
+        <ul>
+            <li>Net Return (%)</li>
+            <li>Win Rate (%)</li>
+            <li>Profit Factor (Gross Profit / Gross Loss)</li>
+            <li>Total Number of Trades</li>
+        </ul>
+    </li>
+    <li><strong>Granular Trade Log:</strong> A Pandas DataFrame captures the exact entry/exit timestamps, prices, and net PnL of every single transaction, which is then color-coded and rendered in the Streamlit UI.</li>
+</ul>
+
+<div style="text-align: center; margin: 20px 0;">
+    <img src="{IMG_BOT}" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
+
+<h3>5. The App via Streamlit</h3>
+<p>The entire system is governed by a unified Graphical User Interface (GUI) built with <strong>Streamlit</strong>.</p>
+<ul>
+    <li><strong>Process Management:</strong> The app uses Python's subprocess.Popen to launch the Signal Bot and Local Bot as detached background processes.</li>
+    <li><strong>State Memory:</strong> It utilizes st.session_state to track which bot is currently running (st.session_state.active_bot_type) and its Process ID (PID). This ensures that bots do not overlap or conflict, and allows the user to safely terminate a running bot with a single button click via .terminate().</li>
+</ul>
