@@ -123,6 +123,7 @@ projects = [
         "desc_short": "Automated Trading and Signal Bot",
         "desc_long": "This Trading Bot is a algorithmic trading dashboard built with Python and Streamlit. It provides a complete quantitative workflow: backtesting historical data, generating real-time Telegram market signals, and executing automated paper trades across Binance and Alpaca. Powered by a dynamic trend-following strategy utilizing EMA, RSI, and ATR, the platform seamlessly bridges the gap between strategy research, risk management, and live market execution.",
         "tech": ["Python", "Backtesting", "Statistics", "Risk Management", "Algorithmic Trading", "Quantitative Analysis"],
+        "link_github": "https://github.com/Alexterminator06/Bitcoin-Trading-Bot",
         "report_html": load_report_with_images("rapport_bot_trading.html", image_map={
                 "IMG_BOT": "bot perf.jpg",
             })
